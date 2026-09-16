@@ -1,0 +1,44 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Repository {
+  id              String     @id @default(cuid())
+  sourcecraftId   String     @unique
+  name            String
+  webUrl          String
+  primaryLanguage String?
+  likesCount      Int        @default(0)
+  lastActivityAt  DateTime?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  analyses        Analysis[]
+}
+
+model Analysis {
+  id           String         @id @default(cuid())
+  repositoryId String
+  status       AnalysisStatus @default(QUEUED)
+  score        Float?
+  dataCoverage Float?
+  startedAt    DateTime?
+  completedAt  DateTime?
+  errorMessage String?
+  createdAt    DateTime       @default(now())
+  repository   Repository     @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+
+  @@index([repositoryId, createdAt])
+}
+
+enum AnalysisStatus {
+  QUEUED
+  COLLECTING
+  CALCULATING
+  COMPLETED
+  FAILED
+}
