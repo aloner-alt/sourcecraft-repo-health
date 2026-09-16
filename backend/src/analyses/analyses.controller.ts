@@ -1,8 +1,9 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AnalysesService } from './analyses.service';
 import { AnalysisRunnerService } from './analysis-runner.service';
 import { AnalysisQueueService } from './analysis-queue.service';
+import { SessionAuthGuard } from '../auth/session-auth.guard';
 import { StartAnalysisDto } from './dto/start-analysis.dto';
 
 @ApiTags('analyses')
@@ -15,6 +16,7 @@ export class AnalysesController {
   ) {}
 
   @Post('repositories/:repositoryId/analyses')
+  @UseGuards(SessionAuthGuard)
   @ApiOperation({ summary: 'Queue a repository analysis' })
   start(
     @Param('repositoryId') repositoryId: string,
@@ -30,6 +32,7 @@ export class AnalysesController {
   }
 
   @Post('analyses/:id/run')
+  @UseGuards(SessionAuthGuard)
   @ApiOperation({ summary: 'Run the available collectors for a queued analysis' })
   run(@Param('id') id: string) {
     return this.analysisRunner.run(id);

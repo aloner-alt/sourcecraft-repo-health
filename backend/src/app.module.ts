@@ -8,6 +8,8 @@ import { AnalysesModule } from './analyses/analyses.module';
 import { SourceCraftModule } from './sourcecraft/sourcecraft.module';
 import { BullModule } from '@nestjs/bullmq';
 import { ConfigService } from '@nestjs/config';
+import { ReportsModule } from './reports/reports.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -27,6 +29,8 @@ import { ConfigService } from '@nestjs/config';
     RepositoriesModule,
     AnalysesModule,
     ScoringModule,
+    ReportsModule,
+    AuthModule,
   ],
   controllers: [HealthController],
 })

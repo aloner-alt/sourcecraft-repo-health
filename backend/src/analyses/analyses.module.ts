@@ -9,6 +9,7 @@ import { BullModule } from '@nestjs/bullmq';
 import { ANALYSIS_QUEUE } from './analysis-queue.constants';
 import { AnalysisQueueService } from './analysis-queue.service';
 import { AnalysisProcessor } from './analysis.processor';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { AnalysisProcessor } from './analysis.processor';
     ScoringModule,
     RecommendationsModule,
     BullModule.registerQueue({ name: ANALYSIS_QUEUE }),
+    AuthModule,
   ],
   controllers: [AnalysesController],
   providers: [

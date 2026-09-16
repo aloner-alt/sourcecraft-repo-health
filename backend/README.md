@@ -79,6 +79,23 @@ before starting the backend.
 - `GET /api/repositories/:id/recommendations` — prioritized improvement actions
 - `GET /api/repositories/:id/history?limit=30` — chronological score history
 - `GET /api/ranking` — public ranking with the same filters as repositories
+- `GET /api/analyses/:id/reports/report.md` — downloadable Markdown report
+- `GET /api/analyses/:id/reports/report.pdf` — downloadable PDF report
+
+## Authentication
+
+Register a Yandex OAuth application and set `YANDEX_CLIENT_ID`,
+`YANDEX_CLIENT_SECRET`, `YANDEX_CALLBACK_URL`, and a random 32+ character
+`AUTH_JWT_SECRET`. The browser flow is:
+
+1. `GET /api/auth/yandex/login`
+2. Yandex redirects to `/api/auth/yandex/callback`
+3. The backend stores its own seven-day JWT in an httpOnly cookie
+4. `GET /api/auth/me` returns the current user; `POST /api/auth/logout` clears it
+
+OAuth state is compared in constant time. Repository synchronization and
+analysis mutations require the session cookie; reports, dashboards, and ranking
+remain public.
 
 The documentation collector checks the repository tree for README, license,
 contributing guide, and CODEOWNERS files. The issues collector measures the
@@ -116,5 +133,5 @@ coverage when SourceCraft returns issue data.
 
 ## Next modules
 
-- Yandex ID authentication
-- Markdown and PDF reports
+- SourceCraft webhooks for automatic re-analysis
+- Persistent user/team roles beyond the current OAuth session
