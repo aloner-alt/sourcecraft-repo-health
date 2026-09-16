@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma, RepositoryVisibility } from '@prisma/client';
 import { PrismaService } from '../database/prisma.service';
+import { SourceCraftClient } from '../sourcecraft/sourcecraft.client';
 import {
   ListRepositoriesQueryDto,
   RepositorySortBy,
@@ -25,7 +26,41 @@ const repositoryListSelect = {
 
 @Injectable()
 export class RepositoriesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly sourceCraft: SourceCraftClient,
+  ) {}
+
+  async syncFromSourceCraft(
+    organizationSlug: string,
+    repositorySlug: string,
+  ) {
+    const source = await this.sourceCraft.getRepository(
+      organizationSlug,
+      repositorySlug,
+    );
+    const visibility = this.mapVisibility(source.visibility);
+    const data = {
+      ownerSlug: source.organization.slug,
+      slug: source.slug,
+      name: source.name,
+      description: source.description ?? null,
+      webUrl: source.web_url,
+      visibility,
+      primaryLanguage: source.language?.name ?? null,
+      lastActivityAt: source.last_updated
+        ? new Date(source.last_updated)
+        : null,
+      lastCollectedAt: new Date(),
+    };
+
+    return this.prisma.repository.upsert({
+      where: { sourcecraftId: source.id },
+      create: { sourcecraftId: source.id, ...data },
+      update: data,
+      select: repositoryListSelect,
+    });
+  }
 
   async findPublic(query: ListRepositoriesQueryDto) {
     const where: Prisma.RepositoryWhereInput = {
@@ -97,5 +132,17 @@ export class RepositoriesService {
       default:
         return [{ latestScore: direction }, { name: 'asc' }];
     }
+  }
+
+  private mapVisibility(
+    visibility: 'public' | 'internal' | 'private',
+  ): RepositoryVisibility {
+    const values = {
+      public: RepositoryVisibility.PUBLIC,
+      internal: RepositoryVisibility.INTERNAL,
+      private: RepositoryVisibility.PRIVATE,
+    } as const;
+
+    return values[visibility];
   }
 }
