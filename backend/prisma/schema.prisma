@@ -8,31 +8,120 @@ datasource db {
 }
 
 model Repository {
-  id              String     @id @default(cuid())
-  sourcecraftId   String     @unique
-  name            String
-  webUrl          String
-  primaryLanguage String?
-  likesCount      Int        @default(0)
-  lastActivityAt  DateTime?
-  createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @updatedAt
-  analyses        Analysis[]
+  id                   String               @id @default(cuid())
+  sourcecraftId        String               @unique
+  ownerSlug            String
+  slug                 String
+  name                 String
+  description          String?
+  webUrl               String
+  visibility           RepositoryVisibility @default(PUBLIC)
+  primaryLanguage      String?
+  likesCount           Int                  @default(0)
+  lastActivityAt       DateTime?
+  lastCollectedAt      DateTime?
+  latestScore          Float?
+  latestPotentialScore Float?
+  latestDataCoverage   Float?
+  lastAnalyzedAt       DateTime?
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+  analyses             Analysis[]
+
+  @@unique([ownerSlug, slug])
+  @@index([primaryLanguage])
+  @@index([likesCount])
+  @@index([lastActivityAt])
+  @@index([latestScore])
 }
 
 model Analysis {
-  id           String         @id @default(cuid())
-  repositoryId String
-  status       AnalysisStatus @default(QUEUED)
-  score        Float?
-  dataCoverage Float?
-  startedAt    DateTime?
-  completedAt  DateTime?
-  errorMessage String?
-  createdAt    DateTime       @default(now())
-  repository   Repository     @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+  id              String           @id @default(cuid())
+  repositoryId    String
+  status          AnalysisStatus   @default(QUEUED)
+  trigger         AnalysisTrigger  @default(MANUAL)
+  score           Float?
+  potentialScore  Float?
+  dataCoverage    Float?
+  methodology     String           @default("v1")
+  startedAt       DateTime?
+  completedAt     DateTime?
+  errorCode       String?
+  errorMessage    String?
+  createdAt       DateTime         @default(now())
+  repository      Repository       @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+  categories      CategoryResult[]
+  recommendations Recommendation[]
 
   @@index([repositoryId, createdAt])
+  @@index([status, createdAt])
+}
+
+model CategoryResult {
+  id         String         @id @default(cuid())
+  analysisId String
+  category   HealthCategory
+  score      Float?
+  weight     Float
+  status     DataStatus     @default(AVAILABLE)
+  summary    String?
+  createdAt  DateTime       @default(now())
+  analysis   Analysis       @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+  metrics    MetricResult[]
+
+  @@unique([analysisId, category])
+  @@index([category, score])
+}
+
+model MetricResult {
+  id               String         @id @default(cuid())
+  categoryResultId String
+  key              String
+  rawValue         Json?
+  normalizedScore  Float?
+  weight           Float
+  status           DataStatus     @default(AVAILABLE)
+  source           String
+  explanation      String?
+  createdAt        DateTime       @default(now())
+  categoryResult   CategoryResult @relation(fields: [categoryResultId], references: [id], onDelete: Cascade)
+  evidence         Evidence[]
+
+  @@unique([categoryResultId, key])
+}
+
+model Recommendation {
+  id                 String                 @id @default(cuid())
+  analysisId         String
+  category           HealthCategory
+  priority           RecommendationPriority
+  title              String
+  problem            String
+  rationale          String
+  action             String
+  expectedScoreDelta Float?
+  confidence         Float?
+  createdAt          DateTime               @default(now())
+  analysis           Analysis               @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+  evidence           Evidence[]
+
+  @@index([analysisId, priority])
+}
+
+model Evidence {
+  id               String          @id @default(cuid())
+  metricResultId   String?
+  recommendationId String?
+  kind             EvidenceKind
+  label            String
+  url              String?
+  value            Json?
+  createdAt        DateTime        @default(now())
+  metricResult     MetricResult?   @relation(fields: [metricResultId], references: [id], onDelete: Cascade)
+  recommendation   Recommendation? @relation(fields: [recommendationId], references: [id], onDelete: Cascade)
+
+  @@index([metricResultId])
+  @@index([recommendationId])
 }
 
 enum AnalysisStatus {
@@ -41,4 +130,51 @@ enum AnalysisStatus {
   CALCULATING
   COMPLETED
   FAILED
+}
+
+enum AnalysisTrigger {
+  MANUAL
+  SCHEDULED
+  REANALYSIS
+}
+
+enum RepositoryVisibility {
+  PUBLIC
+  INTERNAL
+  PRIVATE
+}
+
+enum HealthCategory {
+  SECURITY
+  ACTIVITY
+  DOCUMENTATION
+  CI_CD
+  ISSUES
+  CODE_HEALTH
+}
+
+enum DataStatus {
+  AVAILABLE
+  NO_DATA
+  NOT_APPLICABLE
+  COLLECTION_ERROR
+  PERMISSION_DENIED
+}
+
+enum RecommendationPriority {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum EvidenceKind {
+  FILE
+  PIPELINE
+  VULNERABILITY
+  COMMIT
+  ISSUE
+  MERGE_REQUEST
+  RELEASE
+  METRIC
 }
