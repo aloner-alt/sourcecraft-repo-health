@@ -2,6 +2,7 @@ import { Controller, Get, ServiceUnavailableException } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { PrismaService } from '../database/prisma.service';
 import { AnalysisQueueService } from '../analyses/analysis-queue.service';
+import { ConfigService } from '@nestjs/config';
 
 type HealthResponse = {
   status: 'ok';
@@ -15,6 +16,7 @@ export class HealthController {
   constructor(
     private readonly prisma: PrismaService,
     private readonly analysisQueue: AnalysisQueueService,
+    private readonly config: ConfigService,
   ) {}
 
   @Get()
@@ -24,6 +26,29 @@ export class HealthController {
       status: 'ok',
       service: 'sourcecraft-repo-health-backend',
       timestamp: new Date().toISOString(),
+    };
+  }
+
+  @Get('config')
+  @ApiOkResponse({
+    description: 'Configuration status without secret values.',
+  })
+  getConfigStatus() {
+    const yandexClientId = this.config.get<string>('YANDEX_CLIENT_ID');
+    const yandexClientSecret = this.config.get<string>('YANDEX_CLIENT_SECRET');
+    const yandexCallbackUrl = this.config.get<string>('YANDEX_CALLBACK_URL');
+
+    return {
+      sourceCraftTokenConfigured: Boolean(
+        this.config.get<string>('SOURCECRAFT_TOKEN'),
+      ),
+      yandexAuthConfigured: Boolean(
+        yandexClientId && yandexClientSecret && yandexCallbackUrl,
+      ),
+      frontendUrl: this.config.get<string>(
+        'FRONTEND_URL',
+        'http://localhost:5173',
+      ),
     };
   }
 

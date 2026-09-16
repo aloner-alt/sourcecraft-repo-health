@@ -10,7 +10,9 @@ NestJS backend for collecting SourceCraft repository data, calculating an explai
 
 ## Local development
 
-1. Copy `.env.example` to `.env`.
+1. Copy `.env.example` to `.env` and fill it using
+   [`docs/ENVIRONMENT.md`](docs/ENVIRONMENT.md). The backend validates the
+   configuration at startup and never needs secrets committed to Git.
 2. Start PostgreSQL and Redis from the repository root:
 
    ```bash
@@ -34,6 +36,8 @@ NestJS backend for collecting SourceCraft repository data, calculating an explai
 The API is available at `http://localhost:3000/api`, Swagger at
 `http://localhost:3000/docs`, liveness at `http://localhost:3000/api/health`,
 and database readiness at `http://localhost:3000/api/health/ready`.
+The secret-safe configuration check is available at
+`http://localhost:3000/api/health/config`.
 
 For local schema development use `pnpm prisma:migrate`; committed migrations
 are applied with `pnpm prisma:deploy`. Docker Compose applies them automatically
