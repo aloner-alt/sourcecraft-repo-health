@@ -7,6 +7,7 @@ import {
 import { DocumentationCollectionResult } from '../collectors/documentation/documentation.types';
 import { IssuesCollectionResult } from '../collectors/issues/issues.types';
 import { ActivityCollectionResult } from '../collectors/activity/activity.types';
+import { CiCdCollectionResult } from '../collectors/cicd/cicd.types';
 import { CATEGORY_WEIGHTS } from '../scoring/scoring.constants';
 import { GeneratedRecommendation } from './recommendations.types';
 
@@ -42,6 +43,7 @@ export class RecommendationsService {
     documentation: DocumentationCollectionResult,
     issues: IssuesCollectionResult,
     activity: ActivityCollectionResult,
+    cicd: CiCdCollectionResult,
     availableWeight: number,
   ): GeneratedRecommendation[] {
     const recommendations = documentation.metrics
@@ -139,6 +141,29 @@ export class RecommendationsService {
           EvidenceKind.METRIC,
           recency.key,
           recency.rawValue,
+        ),
+      );
+    }
+
+    const successRate = cicd.metrics.find(
+      (metric) => metric.key === 'success_rate',
+    );
+    if (successRate && successRate.normalizedScore < 80) {
+      recommendations.push(
+        this.recommendation(
+          HealthCategory.CI_CD,
+          'Stabilize CI/CD runs',
+          successRate.explanation,
+          'Reliable automation prevents broken changes from reaching users.',
+          'Inspect failed and timed-out runs, fix the recurring cause, and rerun the pipeline.',
+          this.overallDelta(
+            (100 - successRate.normalizedScore) * successRate.weight,
+            CATEGORY_WEIGHTS.CI_CD,
+            availableWeight,
+          ),
+          EvidenceKind.PIPELINE,
+          successRate.key,
+          successRate.rawValue,
         ),
       );
     }

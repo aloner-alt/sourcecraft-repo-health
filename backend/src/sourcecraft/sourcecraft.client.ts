@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
+  SourceCraftCiRunPage,
   SourceCraftIssuePage,
   SourceCraftIssueQuery,
   SourceCraftRepository,
@@ -72,6 +73,21 @@ export class SourceCraftClient {
         ...(query.pageToken ? { page_token: query.pageToken } : {}),
         ...(query.filter ? { filter: query.filter } : {}),
         ...(query.sortBy ? { sort_by: query.sortBy } : {}),
+      },
+    );
+  }
+
+  listRepositoryCiRuns(
+    organizationSlug: string,
+    repositorySlug: string,
+    pageSize = 100,
+    pageToken?: string,
+  ): Promise<SourceCraftCiRunPage> {
+    return this.request(
+      `/repos/${encodeURIComponent(organizationSlug)}/${encodeURIComponent(repositorySlug)}/cicd/runs`,
+      {
+        page_size: String(pageSize),
+        ...(pageToken ? { page_token: pageToken } : {}),
       },
     );
   }

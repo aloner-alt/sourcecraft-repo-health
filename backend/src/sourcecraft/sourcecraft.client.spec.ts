@@ -84,4 +84,19 @@ describe('SourceCraftClient', () => {
       'https://api.sourcecraft.tech/repos/team/demo/issues?page_size=50&page_token=cursor',
     );
   });
+
+  it('lists CI runs using the documented endpoint', async () => {
+    const fetchMock = jest.spyOn(global, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({ runs: [] }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    );
+
+    await client.listRepositoryCiRuns('team', 'demo', 50, 'cursor');
+
+    expect(fetchMock.mock.calls[0][0].toString()).toBe(
+      'https://api.sourcecraft.tech/repos/team/demo/cicd/runs?page_size=50&page_token=cursor',
+    );
+  });
 });

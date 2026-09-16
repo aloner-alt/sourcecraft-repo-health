@@ -77,3 +77,34 @@ export type SourceCraftIssueQuery = {
   filter?: string;
   sortBy?: string;
 };
+
+export type SourceCraftCiRunStatus =
+  | 'created'
+  | 'prepared'
+  | 'processing'
+  | 'success'
+  | 'failed'
+  | 'canceled'
+  | 'timeout'
+  | 'skipped'
+  | 'awaiting_approval'
+  | 'rejected';
+
+export type SourceCraftCiRun = {
+  id: string;
+  slug: string;
+  status: SourceCraftCiRunStatus;
+  dates: {
+    created_at: string;
+    started_at?: string;
+    finished_at?: string;
+    updated_at: string;
+  };
+  event_type?: 'push' | 'pr_update' | 'manual' | 'restart' | 'schedule';
+  error_messages?: string[];
+};
+
+export type SourceCraftCiRunPage = {
+  runs: SourceCraftCiRun[];
+  next_page_token?: string;
+};

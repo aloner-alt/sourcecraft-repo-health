@@ -1,6 +1,7 @@
 import { DocumentationCollector } from '../collectors/documentation/documentation.collector';
 import { IssuesCollector } from '../collectors/issues/issues.collector';
 import { ActivityCollector } from '../collectors/activity/activity.collector';
+import { CiCdCollector } from '../collectors/cicd/cicd.collector';
 import { PrismaService } from '../database/prisma.service';
 import { ScoringService } from '../scoring/scoring.service';
 import { RecommendationsService } from '../recommendations/recommendations.service';
@@ -18,6 +19,7 @@ describe('AnalysisRunnerService', () => {
   const documentation = { collect: jest.fn() } as unknown as DocumentationCollector;
   const issues = { collect: jest.fn() } as unknown as IssuesCollector;
   const activity = { collect: jest.fn() } as unknown as ActivityCollector;
+  const cicd = { collect: jest.fn() } as unknown as CiCdCollector;
   const prisma = {
     categoryResult: { create: jest.fn() },
     recommendation: { create: jest.fn() },
@@ -28,6 +30,7 @@ describe('AnalysisRunnerService', () => {
     documentation,
     issues,
     activity,
+    cicd,
     new ScoringService(),
     new RecommendationsService(),
     prisma,
@@ -69,6 +72,12 @@ describe('AnalysisRunnerService', () => {
       summary: 'Last repository activity was 1 day ago.',
       metrics: [],
     });
+    (cicd.collect as jest.Mock).mockResolvedValue({
+      score: 70,
+      status: 'AVAILABLE',
+      summary: '2 runs analyzed.',
+      metrics: [],
+    });
 
     const result = await service.run('analysis-1');
 
@@ -76,9 +85,9 @@ describe('AnalysisRunnerService', () => {
     expect(analyses.markCalculating).toHaveBeenCalledWith('analysis-1');
     expect(prisma.categoryResult.create).toHaveBeenCalled();
     expect(analyses.complete).toHaveBeenCalledWith('analysis-1', {
-      score: 73.33,
-      potentialScore: 73.33,
-      dataCoverage: 45,
+      score: 72.5,
+      potentialScore: 72.5,
+      dataCoverage: 60,
     });
     expect(result).toEqual({ id: 'analysis-1', status: 'COMPLETED' });
   });
@@ -94,6 +103,11 @@ describe('AnalysisRunnerService', () => {
       metrics: [],
     });
     (activity.collect as jest.Mock).mockReturnValue({
+      score: null,
+      status: 'NO_DATA',
+      metrics: [],
+    });
+    (cicd.collect as jest.Mock).mockResolvedValue({
       score: null,
       status: 'NO_DATA',
       metrics: [],

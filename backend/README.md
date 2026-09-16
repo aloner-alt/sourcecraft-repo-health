@@ -87,6 +87,11 @@ The activity collector uses the documented SourceCraft repository
 commit frequency and contributor activity remain unavailable until a verified
 commit-history data source is connected.
 
+The CI/CD collector uses SourceCraft run history to measure pipeline presence,
+terminal-run success rate, and freshness of the latest successful run. When
+reliability is low, the analysis recommends stabilizing the pipeline. With all
+currently implemented categories available, data coverage is 60%.
+
 ## Next modules
 
 - Yandex ID authentication
