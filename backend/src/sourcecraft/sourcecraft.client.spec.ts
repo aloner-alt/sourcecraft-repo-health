@@ -46,4 +46,24 @@ describe('SourceCraftClient', () => {
       BadGatewayException,
     );
   });
+
+  it('lists a repository tree recursively', async () => {
+    const fetchMock = jest.spyOn(global, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({ trees: [], next_page_token: 'next' }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    );
+
+    const page = await client.listRepositoryTree('team', 'demo', {
+      pageSize: 250,
+      pageToken: 'cursor',
+      revision: 'main',
+    });
+
+    expect(page.next_page_token).toBe('next');
+    expect(fetchMock.mock.calls[0][0].toString()).toBe(
+      'https://api.sourcecraft.tech/repos/team/demo/trees?page_size=250&recursive=true&page_token=cursor&revision=main',
+    );
+  });
 });

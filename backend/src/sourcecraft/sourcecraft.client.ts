@@ -7,6 +7,8 @@ import { ConfigService } from '@nestjs/config';
 import {
   SourceCraftRepository,
   SourceCraftRepositoryPage,
+  SourceCraftTreePage,
+  SourceCraftTreeQuery,
 } from './sourcecraft.types';
 
 @Injectable()
@@ -37,6 +39,23 @@ export class SourceCraftClient {
       page_size: String(pageSize),
       ...(pageToken ? { page_token: pageToken } : {}),
     });
+  }
+
+  listRepositoryTree(
+    organizationSlug: string,
+    repositorySlug: string,
+    query: SourceCraftTreeQuery = {},
+  ): Promise<SourceCraftTreePage> {
+    return this.request(
+      `/repos/${encodeURIComponent(organizationSlug)}/${encodeURIComponent(repositorySlug)}/trees`,
+      {
+        page_size: String(query.pageSize ?? 1_000),
+        recursive: String(query.recursive ?? true),
+        ...(query.pageToken ? { page_token: query.pageToken } : {}),
+        ...(query.path ? { path: query.path } : {}),
+        ...(query.revision ? { revision: query.revision } : {}),
+      },
+    );
   }
 
   private async request<T>(

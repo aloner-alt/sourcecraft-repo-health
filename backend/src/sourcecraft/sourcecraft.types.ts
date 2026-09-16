@@ -30,3 +30,22 @@ export type SourceCraftRepositoryPage = {
   repositories: SourceCraftRepository[];
   next_page_token?: string;
 };
+
+export type SourceCraftTreeEntry = {
+  name: string;
+  path: string;
+  type: 'file' | 'executable' | 'dir' | 'symlink' | 'submodule';
+};
+
+export type SourceCraftTreePage = {
+  trees: SourceCraftTreeEntry[];
+  next_page_token?: string;
+};
+
+export type SourceCraftTreeQuery = {
+  pageSize?: number;
+  pageToken?: string;
+  path?: string;
+  recursive?: boolean;
+  revision?: string;
+};

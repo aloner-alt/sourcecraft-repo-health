@@ -33,12 +33,44 @@ NestJS backend for collecting SourceCraft repository data, calculating an explai
 
 The API is available at `http://localhost:3000/api`, Swagger at `http://localhost:3000/docs`, and the health endpoint at `http://localhost:3000/api/health`.
 
-## Planned modules
+## Analysis flow
+
+1. Sync a SourceCraft repository:
+
+   ```http
+   POST /api/repositories/sourcecraft/:organizationSlug/:repositorySlug/sync
+   ```
+
+2. Create an analysis:
+
+   ```http
+   POST /api/repositories/:repositoryId/analyses
+   Content-Type: application/json
+
+   {"trigger":"MANUAL"}
+   ```
+
+3. Run the currently available collectors:
+
+   ```http
+   POST /api/analyses/:analysisId/run
+   ```
+
+4. Read the score, metrics, and evidence:
+
+   ```http
+   GET /api/analyses/:analysisId
+   ```
+
+The first implemented collector checks the repository tree for README, license,
+contributing guide, and CODEOWNERS files. Until the remaining categories are
+implemented, the response deliberately reports 15% data coverage.
+
+## Next modules
 
 - Yandex ID authentication
-- SourceCraft API and CLI integration
-- Repository data collection
-- Metrics and Repo Health Score
+- Additional SourceCraft repository collectors
+- Security, activity, CI/CD, issues, and code-health metrics
 - Recommendations and potential score
 - Public repository ranking
 - Background analysis jobs
