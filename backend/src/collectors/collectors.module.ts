@@ -5,10 +5,12 @@ import { IssuesCollector } from './issues/issues.collector';
 import { ActivityCollector } from './activity/activity.collector';
 import { CiCdCollector } from './cicd/cicd.collector';
 import { SecurityCollector } from './security/security.collector';
+import { RepositoryTreeProvider } from './repository-tree.provider';
+import { CodeHealthCollector } from './code-health/code-health.collector';
 
 @Module({
   imports: [SourceCraftModule],
-  providers: [DocumentationCollector, IssuesCollector, ActivityCollector, CiCdCollector, SecurityCollector],
-  exports: [DocumentationCollector, IssuesCollector, ActivityCollector, CiCdCollector, SecurityCollector],
+  providers: [RepositoryTreeProvider, DocumentationCollector, IssuesCollector, ActivityCollector, CiCdCollector, SecurityCollector, CodeHealthCollector],
+  exports: [DocumentationCollector, IssuesCollector, ActivityCollector, CiCdCollector, SecurityCollector, CodeHealthCollector],
 })
 export class CollectorsModule {}

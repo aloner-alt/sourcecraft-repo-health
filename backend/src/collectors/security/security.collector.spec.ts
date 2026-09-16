@@ -1,16 +1,16 @@
-import { SourceCraftClient } from '../../sourcecraft/sourcecraft.client';
 import { SecurityCollector } from './security.collector';
+import { RepositoryTreeProvider } from '../repository-tree.provider';
 
 describe('SecurityCollector', () => {
-  const sourceCraft = { listRepositoryTree: jest.fn() } as unknown as SourceCraftClient;
-  const collector = new SecurityCollector(sourceCraft);
+  const tree = { get: jest.fn() } as unknown as RepositoryTreeProvider;
+  const collector = new SecurityCollector(tree);
 
   it('scores only verifiable repository security hygiene', async () => {
-    (sourceCraft.listRepositoryTree as jest.Mock).mockResolvedValue({ trees: [
+    (tree.get as jest.Mock).mockResolvedValue([
       { name: 'SECURITY.md', path: 'SECURITY.md', type: 'file' },
       { name: 'package.json', path: 'package.json', type: 'file' },
       { name: 'pnpm-lock.yaml', path: 'pnpm-lock.yaml', type: 'file' },
-    ] });
+    ]);
     await expect(collector.collect('team', 'demo')).resolves.toMatchObject({ score: 85, summary: expect.stringContaining('vulnerabilities were not assessed') });
   });
 });

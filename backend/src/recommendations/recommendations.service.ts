@@ -9,6 +9,7 @@ import { IssuesCollectionResult } from '../collectors/issues/issues.types';
 import { ActivityCollectionResult } from '../collectors/activity/activity.types';
 import { CiCdCollectionResult } from '../collectors/cicd/cicd.types';
 import { SecurityCollectionResult } from '../collectors/security/security.collector';
+import { CodeHealthCollectionResult } from '../collectors/code-health/code-health.collector';
 import { CATEGORY_WEIGHTS } from '../scoring/scoring.constants';
 import { GeneratedRecommendation } from './recommendations.types';
 
@@ -46,6 +47,7 @@ export class RecommendationsService {
     activity: ActivityCollectionResult,
     cicd: CiCdCollectionResult,
     security: SecurityCollectionResult,
+    codeHealth: CodeHealthCollectionResult,
     availableWeight: number,
   ): GeneratedRecommendation[] {
     const recommendations = documentation.metrics
@@ -189,6 +191,34 @@ export class RecommendationsService {
           this.overallDelta(
             100 * metric.weight,
             CATEGORY_WEIGHTS.SECURITY,
+            availableWeight,
+          ),
+          EvidenceKind.METRIC,
+          metric.key,
+          metric.rawValue,
+        ),
+      );
+    }
+
+    const codeHealthTitles: Record<string, string> = {
+      automated_tests: 'Add automated tests',
+      static_analysis: 'Configure static analysis',
+      formatting_rules: 'Add consistent formatting rules',
+      typed_project: 'Enable typed project checks',
+    };
+    for (const metric of codeHealth.metrics.filter(
+      (item) => !item.rawValue.present,
+    )) {
+      recommendations.push(
+        this.recommendation(
+          HealthCategory.CODE_HEALTH,
+          codeHealthTitles[metric.key],
+          metric.explanation,
+          'Automated engineering checks reduce regressions and review overhead.',
+          `Implement ${metric.key.replaceAll('_', ' ')} and run it in CI.`,
+          this.overallDelta(
+            100 * metric.weight,
+            CATEGORY_WEIGHTS.CODE_HEALTH,
             availableWeight,
           ),
           EvidenceKind.METRIC,

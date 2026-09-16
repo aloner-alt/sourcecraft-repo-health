@@ -98,6 +98,13 @@ updates. It does not claim to detect vulnerabilities because the published
 SourceCraft REST API does not expose AppSec findings. With this category,
 maximum verified data coverage is 80%.
 
+The code-health category detects automated tests, static-analysis configuration,
+formatting rules, and typed-project configuration. Missing practices generate
+prioritized recommendations. Documentation, security, and code-health collectors
+share one paginated repository-tree request through a short-lived cache. The
+implemented methodology now covers all six categories and can reach 100% data
+coverage when SourceCraft returns issue data.
+
 ## Next modules
 
 - Yandex ID authentication

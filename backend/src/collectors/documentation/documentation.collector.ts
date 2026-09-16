@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { SourceCraftClient } from '../../sourcecraft/sourcecraft.client';
 import { SourceCraftTreeEntry } from '../../sourcecraft/sourcecraft.types';
+import { RepositoryTreeProvider } from '../repository-tree.provider';
 import {
   DocumentationCollectionResult,
   DocumentationMetric,
@@ -15,13 +15,13 @@ const DOCUMENTATION_FILES = [
 
 @Injectable()
 export class DocumentationCollector {
-  constructor(private readonly sourceCraft: SourceCraftClient) {}
+  constructor(private readonly tree: RepositoryTreeProvider) {}
 
   async collect(
     organizationSlug: string,
     repositorySlug: string,
   ): Promise<DocumentationCollectionResult> {
-    const entries = await this.loadTree(organizationSlug, repositorySlug);
+    const entries = await this.tree.get(organizationSlug, repositorySlug);
     const files = entries.filter((entry) => entry.type === 'file');
     const metrics = DOCUMENTATION_FILES.map((definition) =>
       this.createMetric(files, definition),
@@ -39,27 +39,6 @@ export class DocumentationCollector {
       summary: `${found} of ${metrics.length} baseline documentation files found.`,
       metrics,
     };
-  }
-
-  private async loadTree(
-    organizationSlug: string,
-    repositorySlug: string,
-  ): Promise<SourceCraftTreeEntry[]> {
-    const entries: SourceCraftTreeEntry[] = [];
-    let pageToken: string | undefined;
-
-    for (let page = 0; page < 100; page += 1) {
-      const result = await this.sourceCraft.listRepositoryTree(
-        organizationSlug,
-        repositorySlug,
-        { pageSize: 1_000, pageToken, recursive: true },
-      );
-      entries.push(...result.trees);
-      pageToken = result.next_page_token;
-      if (!pageToken) return entries;
-    }
-
-    throw new Error('SourceCraft repository tree exceeded 100 pages.');
   }
 
   private createMetric(

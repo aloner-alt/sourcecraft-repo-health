@@ -3,6 +3,7 @@ import { IssuesCollector } from '../collectors/issues/issues.collector';
 import { ActivityCollector } from '../collectors/activity/activity.collector';
 import { CiCdCollector } from '../collectors/cicd/cicd.collector';
 import { SecurityCollector } from '../collectors/security/security.collector';
+import { CodeHealthCollector } from '../collectors/code-health/code-health.collector';
 import { PrismaService } from '../database/prisma.service';
 import { ScoringService } from '../scoring/scoring.service';
 import { RecommendationsService } from '../recommendations/recommendations.service';
@@ -22,6 +23,7 @@ describe('AnalysisRunnerService', () => {
   const activity = { collect: jest.fn() } as unknown as ActivityCollector;
   const cicd = { collect: jest.fn() } as unknown as CiCdCollector;
   const security = { collect: jest.fn() } as unknown as SecurityCollector;
+  const codeHealth = { collect: jest.fn() } as unknown as CodeHealthCollector;
   const prisma = {
     categoryResult: { create: jest.fn() },
     recommendation: { create: jest.fn() },
@@ -34,6 +36,7 @@ describe('AnalysisRunnerService', () => {
     activity,
     cicd,
     security,
+    codeHealth,
     new ScoringService(),
     new RecommendationsService(),
     prisma,
@@ -82,6 +85,7 @@ describe('AnalysisRunnerService', () => {
       metrics: [],
     });
     (security.collect as jest.Mock).mockResolvedValue({ score: 85, status: 'AVAILABLE', summary: '3 of 4 checks.', metrics: [] });
+    (codeHealth.collect as jest.Mock).mockResolvedValue({ score: 100, status: 'AVAILABLE', summary: '4 of 4 checks.', metrics: [] });
 
     const result = await service.run('analysis-1');
 
@@ -89,9 +93,9 @@ describe('AnalysisRunnerService', () => {
     expect(analyses.markCalculating).toHaveBeenCalledWith('analysis-1');
     expect(prisma.categoryResult.create).toHaveBeenCalled();
     expect(analyses.complete).toHaveBeenCalledWith('analysis-1', {
-      score: 75.63,
-      potentialScore: 75.63,
-      dataCoverage: 80,
+      score: 80.5,
+      potentialScore: 80.5,
+      dataCoverage: 100,
     });
     expect(result).toEqual({ id: 'analysis-1', status: 'COMPLETED' });
   });
@@ -117,6 +121,7 @@ describe('AnalysisRunnerService', () => {
       metrics: [],
     });
     (security.collect as jest.Mock).mockResolvedValue({ score: 0, status: 'AVAILABLE', summary: '', metrics: [] });
+    (codeHealth.collect as jest.Mock).mockResolvedValue({ score: 0, status: 'AVAILABLE', summary: '', metrics: [] });
 
     await expect(service.run('analysis-1')).rejects.toThrow('API unavailable');
     expect(analyses.fail).toHaveBeenCalledWith(
