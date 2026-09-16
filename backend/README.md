@@ -82,6 +82,11 @@ documentation, stale issues, and incomplete issue descriptions. Each item has
 an explainable expected score increase, and their combined effect is stored as
 the analysis `potentialScore`.
 
+The activity collector uses the documented SourceCraft repository
+`last_updated` timestamp. It deliberately measures only repository recency;
+commit frequency and contributor activity remain unavailable until a verified
+commit-history data source is connected.
+
 ## Next modules
 
 - Yandex ID authentication

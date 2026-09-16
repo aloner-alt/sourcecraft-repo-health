@@ -7,6 +7,7 @@ import {
 } from '@prisma/client';
 import { DocumentationCollector } from '../collectors/documentation/documentation.collector';
 import { IssuesCollector } from '../collectors/issues/issues.collector';
+import { ActivityCollector } from '../collectors/activity/activity.collector';
 import { PrismaService } from '../database/prisma.service';
 import { RecommendationsService } from '../recommendations/recommendations.service';
 import { CATEGORY_WEIGHTS, HealthCategory } from '../scoring/scoring.constants';
@@ -19,6 +20,7 @@ export class AnalysisRunnerService {
     private readonly analyses: AnalysesService,
     private readonly documentation: DocumentationCollector,
     private readonly issues: IssuesCollector,
+    private readonly activity: ActivityCollector,
     private readonly scoring: ScoringService,
     private readonly recommendations: RecommendationsService,
     private readonly prisma: PrismaService,
@@ -39,6 +41,9 @@ export class AnalysisRunnerService {
           analysis.repository.slug,
         ),
       ]);
+      const activityResult = this.activity.collect(
+        analysis.repository.lastActivityAt,
+      );
       await this.analyses.markCalculating(id);
 
       await this.prisma.$transaction([
@@ -98,6 +103,36 @@ export class AnalysisRunnerService {
             },
           },
         }),
+        this.prisma.categoryResult.create({
+          data: {
+            analysisId: id,
+            category: PrismaHealthCategory.ACTIVITY,
+            score: activityResult.score,
+            weight: CATEGORY_WEIGHTS[HealthCategory.ACTIVITY],
+            status: activityResult.status,
+            summary: activityResult.summary,
+            metrics: {
+              create: activityResult.metrics.map((metric) => ({
+                key: metric.key,
+                rawValue: metric.rawValue as Prisma.InputJsonValue,
+                normalizedScore: metric.normalizedScore,
+                weight: metric.weight,
+                status: metric.status,
+                source: metric.source,
+                explanation: metric.explanation,
+                evidence: {
+                  create: [
+                    {
+                      kind: EvidenceKind.METRIC,
+                      label: 'Last repository activity',
+                      value: metric.rawValue as Prisma.InputJsonValue,
+                    },
+                  ],
+                },
+              })),
+            },
+          },
+        }),
       ]);
 
       const availableCategories = [
@@ -108,6 +143,14 @@ export class AnalysisRunnerService {
         ...(issuesResult.score === null
           ? []
           : [{ category: HealthCategory.ISSUES, score: issuesResult.score }]),
+        ...(activityResult.score === null
+          ? []
+          : [
+              {
+                category: HealthCategory.ACTIVITY,
+                score: activityResult.score,
+              },
+            ]),
       ];
       const health = this.scoring.calculate(availableCategories);
 
@@ -118,6 +161,7 @@ export class AnalysisRunnerService {
       const recommendations = this.recommendations.build(
         documentationResult,
         issuesResult,
+        activityResult,
         health.availableWeight,
       );
       if (recommendations.length > 0) {

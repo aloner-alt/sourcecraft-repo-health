@@ -6,6 +6,7 @@ import {
 } from '@prisma/client';
 import { DocumentationCollectionResult } from '../collectors/documentation/documentation.types';
 import { IssuesCollectionResult } from '../collectors/issues/issues.types';
+import { ActivityCollectionResult } from '../collectors/activity/activity.types';
 import { CATEGORY_WEIGHTS } from '../scoring/scoring.constants';
 import { GeneratedRecommendation } from './recommendations.types';
 
@@ -40,6 +41,7 @@ export class RecommendationsService {
   build(
     documentation: DocumentationCollectionResult,
     issues: IssuesCollectionResult,
+    activity: ActivityCollectionResult,
     availableWeight: number,
   ): GeneratedRecommendation[] {
     const recommendations = documentation.metrics
@@ -114,6 +116,29 @@ export class RecommendationsService {
           EvidenceKind.METRIC,
           descriptions.key,
           descriptions.rawValue,
+        ),
+      );
+    }
+
+    const recency = activity.metrics.find(
+      (metric) => metric.key === 'repository_recency',
+    );
+    if (recency && recency.normalizedScore < 80) {
+      recommendations.push(
+        this.recommendation(
+          HealthCategory.ACTIVITY,
+          'Resume repository activity',
+          activity.summary,
+          'Long inactivity makes maintenance status unclear to users and contributors.',
+          'Publish a maintenance update and merge a meaningful repository change.',
+          this.overallDelta(
+            (100 - recency.normalizedScore) * recency.weight,
+            CATEGORY_WEIGHTS.ACTIVITY,
+            availableWeight,
+          ),
+          EvidenceKind.METRIC,
+          recency.key,
+          recency.rawValue,
         ),
       );
     }
