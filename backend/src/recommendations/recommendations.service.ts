@@ -8,6 +8,7 @@ import { DocumentationCollectionResult } from '../collectors/documentation/docum
 import { IssuesCollectionResult } from '../collectors/issues/issues.types';
 import { ActivityCollectionResult } from '../collectors/activity/activity.types';
 import { CiCdCollectionResult } from '../collectors/cicd/cicd.types';
+import { SecurityCollectionResult } from '../collectors/security/security.collector';
 import { CATEGORY_WEIGHTS } from '../scoring/scoring.constants';
 import { GeneratedRecommendation } from './recommendations.types';
 
@@ -44,6 +45,7 @@ export class RecommendationsService {
     issues: IssuesCollectionResult,
     activity: ActivityCollectionResult,
     cicd: CiCdCollectionResult,
+    security: SecurityCollectionResult,
     availableWeight: number,
   ): GeneratedRecommendation[] {
     const recommendations = documentation.metrics
@@ -164,6 +166,34 @@ export class RecommendationsService {
           EvidenceKind.PIPELINE,
           successRate.key,
           successRate.rawValue,
+        ),
+      );
+    }
+
+    const securityTitles: Record<string, string> = {
+      security_policy: 'Add a security policy',
+      dependency_manifest: 'Declare project dependencies',
+      dependency_lockfile: 'Lock dependency versions',
+      dependency_updates: 'Automate dependency updates',
+    };
+    for (const metric of security.metrics.filter(
+      (item) => !item.rawValue.present,
+    )) {
+      recommendations.push(
+        this.recommendation(
+          HealthCategory.SECURITY,
+          securityTitles[metric.key],
+          metric.explanation,
+          'Baseline security hygiene makes dependency and vulnerability handling repeatable.',
+          `Implement the missing ${metric.key.replaceAll('_', ' ')} control and document ownership.`,
+          this.overallDelta(
+            100 * metric.weight,
+            CATEGORY_WEIGHTS.SECURITY,
+            availableWeight,
+          ),
+          EvidenceKind.METRIC,
+          metric.key,
+          metric.rawValue,
         ),
       );
     }

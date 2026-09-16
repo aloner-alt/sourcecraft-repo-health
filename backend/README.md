@@ -92,6 +92,12 @@ terminal-run success rate, and freshness of the latest successful run. When
 reliability is low, the analysis recommends stabilizing the pipeline. With all
 currently implemented categories available, data coverage is 60%.
 
+The security category currently measures repository security hygiene only:
+security policy, dependency manifest, lock file, and automated dependency
+updates. It does not claim to detect vulnerabilities because the published
+SourceCraft REST API does not expose AppSec findings. With this category,
+maximum verified data coverage is 80%.
+
 ## Next modules
 
 - Yandex ID authentication

@@ -59,6 +59,12 @@ describe('RecommendationsService', () => {
         summary: '',
         metrics: [],
       },
+      {
+        score: 100,
+        status: DataStatus.AVAILABLE,
+        summary: '',
+        metrics: [],
+      },
       0.3,
     );
 

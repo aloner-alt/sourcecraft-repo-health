@@ -9,6 +9,7 @@ import { DocumentationCollector } from '../collectors/documentation/documentatio
 import { IssuesCollector } from '../collectors/issues/issues.collector';
 import { ActivityCollector } from '../collectors/activity/activity.collector';
 import { CiCdCollector } from '../collectors/cicd/cicd.collector';
+import { SecurityCollector } from '../collectors/security/security.collector';
 import { PrismaService } from '../database/prisma.service';
 import { RecommendationsService } from '../recommendations/recommendations.service';
 import { CATEGORY_WEIGHTS, HealthCategory } from '../scoring/scoring.constants';
@@ -23,6 +24,7 @@ export class AnalysisRunnerService {
     private readonly issues: IssuesCollector,
     private readonly activity: ActivityCollector,
     private readonly cicd: CiCdCollector,
+    private readonly security: SecurityCollector,
     private readonly scoring: ScoringService,
     private readonly recommendations: RecommendationsService,
     private readonly prisma: PrismaService,
@@ -33,7 +35,7 @@ export class AnalysisRunnerService {
     await this.analyses.markCollecting(id);
 
     try {
-      const [documentationResult, issuesResult, cicdResult] = await Promise.all([
+      const [documentationResult, issuesResult, cicdResult, securityResult] = await Promise.all([
         this.documentation.collect(
           analysis.repository.ownerSlug,
           analysis.repository.slug,
@@ -43,6 +45,10 @@ export class AnalysisRunnerService {
           analysis.repository.slug,
         ),
         this.cicd.collect(
+          analysis.repository.ownerSlug,
+          analysis.repository.slug,
+        ),
+        this.security.collect(
           analysis.repository.ownerSlug,
           analysis.repository.slug,
         ),
@@ -161,6 +167,28 @@ export class AnalysisRunnerService {
             },
           },
         }),
+        this.prisma.categoryResult.create({
+          data: {
+            analysisId: id,
+            category: PrismaHealthCategory.SECURITY,
+            score: securityResult.score,
+            weight: CATEGORY_WEIGHTS[HealthCategory.SECURITY],
+            status: securityResult.status,
+            summary: securityResult.summary,
+            metrics: {
+              create: securityResult.metrics.map((metric) => ({
+                key: metric.key,
+                rawValue: metric.rawValue as Prisma.InputJsonValue,
+                normalizedScore: metric.normalizedScore,
+                weight: metric.weight,
+                status: metric.status,
+                source: metric.source,
+                explanation: metric.explanation,
+                evidence: metric.rawValue.path ? { create: [{ kind: EvidenceKind.FILE, label: metric.key, value: { path: metric.rawValue.path } }] } : undefined,
+              })),
+            },
+          },
+        }),
       ]);
 
       const availableCategories = [
@@ -182,6 +210,7 @@ export class AnalysisRunnerService {
         ...(cicdResult.score === null
           ? []
           : [{ category: HealthCategory.CI_CD, score: cicdResult.score }]),
+        { category: HealthCategory.SECURITY, score: securityResult.score },
       ];
       const health = this.scoring.calculate(availableCategories);
 
@@ -194,6 +223,7 @@ export class AnalysisRunnerService {
         issuesResult,
         activityResult,
         cicdResult,
+        securityResult,
         health.availableWeight,
       );
       if (recommendations.length > 0) {
