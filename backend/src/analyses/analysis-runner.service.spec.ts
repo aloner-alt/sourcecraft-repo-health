@@ -1,6 +1,8 @@
 import { DocumentationCollector } from '../collectors/documentation/documentation.collector';
+import { IssuesCollector } from '../collectors/issues/issues.collector';
 import { PrismaService } from '../database/prisma.service';
 import { ScoringService } from '../scoring/scoring.service';
+import { RecommendationsService } from '../recommendations/recommendations.service';
 import { AnalysisRunnerService } from './analysis-runner.service';
 import { AnalysesService } from './analyses.service';
 
@@ -13,13 +15,18 @@ describe('AnalysisRunnerService', () => {
     fail: jest.fn(),
   } as unknown as AnalysesService;
   const documentation = { collect: jest.fn() } as unknown as DocumentationCollector;
+  const issues = { collect: jest.fn() } as unknown as IssuesCollector;
   const prisma = {
     categoryResult: { create: jest.fn() },
+    recommendation: { create: jest.fn() },
+    $transaction: jest.fn((operations: Promise<unknown>[]) => Promise.all(operations)),
   } as unknown as PrismaService;
   const service = new AnalysisRunnerService(
     analyses,
     documentation,
+    issues,
     new ScoringService(),
+    new RecommendationsService(),
     prisma,
   );
 
@@ -47,6 +54,12 @@ describe('AnalysisRunnerService', () => {
         },
       ],
     });
+    (issues.collect as jest.Mock).mockResolvedValue({
+      score: 80,
+      status: 'AVAILABLE',
+      summary: '10 issues analyzed.',
+      metrics: [],
+    });
 
     const result = await service.run('analysis-1');
 
@@ -54,8 +67,9 @@ describe('AnalysisRunnerService', () => {
     expect(analyses.markCalculating).toHaveBeenCalledWith('analysis-1');
     expect(prisma.categoryResult.create).toHaveBeenCalled();
     expect(analyses.complete).toHaveBeenCalledWith('analysis-1', {
-      score: 40,
-      dataCoverage: 15,
+      score: 60,
+      potentialScore: 60,
+      dataCoverage: 30,
     });
     expect(result).toEqual({ id: 'analysis-1', status: 'COMPLETED' });
   });
@@ -65,6 +79,11 @@ describe('AnalysisRunnerService', () => {
       repository: { ownerSlug: 'team', slug: 'demo' },
     });
     (documentation.collect as jest.Mock).mockRejectedValue(new Error('API unavailable'));
+    (issues.collect as jest.Mock).mockResolvedValue({
+      score: null,
+      status: 'NO_DATA',
+      metrics: [],
+    });
 
     await expect(service.run('analysis-1')).rejects.toThrow('API unavailable');
     expect(analyses.fail).toHaveBeenCalledWith(

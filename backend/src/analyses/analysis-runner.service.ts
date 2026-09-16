@@ -6,7 +6,9 @@ import {
   Prisma,
 } from '@prisma/client';
 import { DocumentationCollector } from '../collectors/documentation/documentation.collector';
+import { IssuesCollector } from '../collectors/issues/issues.collector';
 import { PrismaService } from '../database/prisma.service';
+import { RecommendationsService } from '../recommendations/recommendations.service';
 import { CATEGORY_WEIGHTS, HealthCategory } from '../scoring/scoring.constants';
 import { ScoringService } from '../scoring/scoring.service';
 import { AnalysesService } from './analyses.service';
@@ -16,7 +18,9 @@ export class AnalysisRunnerService {
   constructor(
     private readonly analyses: AnalysesService,
     private readonly documentation: DocumentationCollector,
+    private readonly issues: IssuesCollector,
     private readonly scoring: ScoringService,
+    private readonly recommendations: RecommendationsService,
     private readonly prisma: PrismaService,
   ) {}
 
@@ -25,54 +29,139 @@ export class AnalysisRunnerService {
     await this.analyses.markCollecting(id);
 
     try {
-      const result = await this.documentation.collect(
-        analysis.repository.ownerSlug,
-        analysis.repository.slug,
-      );
+      const [documentationResult, issuesResult] = await Promise.all([
+        this.documentation.collect(
+          analysis.repository.ownerSlug,
+          analysis.repository.slug,
+        ),
+        this.issues.collect(
+          analysis.repository.ownerSlug,
+          analysis.repository.slug,
+        ),
+      ]);
       await this.analyses.markCalculating(id);
 
-      await this.prisma.categoryResult.create({
-        data: {
-          analysisId: id,
-          category: PrismaHealthCategory.DOCUMENTATION,
-          score: result.score,
-          weight: CATEGORY_WEIGHTS[HealthCategory.DOCUMENTATION],
-          status: DataStatus.AVAILABLE,
-          summary: result.summary,
-          metrics: {
-            create: result.metrics.map((metric) => ({
-              key: metric.key,
-              rawValue: metric.rawValue as Prisma.InputJsonValue,
-              normalizedScore: metric.normalizedScore,
-              weight: metric.weight,
-              status: DataStatus.AVAILABLE,
-              source: metric.source,
-              explanation: metric.explanation,
-              evidence: {
-                create: metric.evidence.map((evidence) => ({
-                  kind: EvidenceKind.FILE,
-                  label: evidence.label,
-                  value: { path: evidence.path },
-                })),
-              },
-            })),
+      await this.prisma.$transaction([
+        this.prisma.categoryResult.create({
+          data: {
+            analysisId: id,
+            category: PrismaHealthCategory.DOCUMENTATION,
+            score: documentationResult.score,
+            weight: CATEGORY_WEIGHTS[HealthCategory.DOCUMENTATION],
+            status: DataStatus.AVAILABLE,
+            summary: documentationResult.summary,
+            metrics: {
+              create: documentationResult.metrics.map((metric) => ({
+                key: metric.key,
+                rawValue: metric.rawValue as Prisma.InputJsonValue,
+                normalizedScore: metric.normalizedScore,
+                weight: metric.weight,
+                status: DataStatus.AVAILABLE,
+                source: metric.source,
+                explanation: metric.explanation,
+                evidence: {
+                  create: metric.evidence.map((evidence) => ({
+                    kind: EvidenceKind.FILE,
+                    label: evidence.label,
+                    value: { path: evidence.path },
+                  })),
+                },
+              })),
+            },
           },
-        },
-      });
+        }),
+        this.prisma.categoryResult.create({
+          data: {
+            analysisId: id,
+            category: PrismaHealthCategory.ISSUES,
+            score: issuesResult.score,
+            weight: CATEGORY_WEIGHTS[HealthCategory.ISSUES],
+            status: issuesResult.status,
+            summary: issuesResult.summary,
+            metrics: {
+              create: issuesResult.metrics.map((metric) => ({
+                key: metric.key,
+                rawValue: metric.rawValue as Prisma.InputJsonValue,
+                normalizedScore: metric.normalizedScore,
+                weight: metric.weight,
+                status: metric.status,
+                source: metric.source,
+                explanation: metric.explanation,
+                evidence: {
+                  create: metric.evidence.map((evidence) => ({
+                    kind: EvidenceKind.ISSUE,
+                    label: evidence.label,
+                    value: evidence.value,
+                  })),
+                },
+              })),
+            },
+          },
+        }),
+      ]);
 
-      const health = this.scoring.calculate([
+      const availableCategories = [
         {
           category: HealthCategory.DOCUMENTATION,
-          score: result.score,
+          score: documentationResult.score,
         },
-      ]);
+        ...(issuesResult.score === null
+          ? []
+          : [{ category: HealthCategory.ISSUES, score: issuesResult.score }]),
+      ];
+      const health = this.scoring.calculate(availableCategories);
 
       if (health.score === null) {
         throw new Error('Health score could not be calculated.');
       }
 
+      const recommendations = this.recommendations.build(
+        documentationResult,
+        issuesResult,
+        health.availableWeight,
+      );
+      if (recommendations.length > 0) {
+        await this.prisma.$transaction(
+          recommendations.map((recommendation) =>
+            this.prisma.recommendation.create({
+              data: {
+                analysisId: id,
+                category: recommendation.category,
+                priority: recommendation.priority,
+                title: recommendation.title,
+                problem: recommendation.problem,
+                rationale: recommendation.rationale,
+                action: recommendation.action,
+                expectedScoreDelta: recommendation.expectedScoreDelta,
+                confidence: recommendation.confidence,
+                evidence: {
+                  create: recommendation.evidence.map((evidence) => ({
+                    kind: evidence.kind,
+                    label: evidence.label,
+                    value: evidence.value as Prisma.InputJsonValue,
+                  })),
+                },
+              },
+            }),
+          ),
+        );
+      }
+      const potentialScore = Math.min(
+        100,
+        Math.round(
+          (health.score +
+            recommendations.reduce(
+              (total, recommendation) =>
+                total + recommendation.expectedScoreDelta,
+              0,
+            )) *
+            100,
+        ) / 100,
+      );
+
       await this.analyses.complete(id, {
         score: health.score,
+        potentialScore,
         dataCoverage: health.dataCoverage,
       });
 

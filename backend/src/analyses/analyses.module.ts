@@ -4,9 +4,10 @@ import { AnalysesService } from './analyses.service';
 import { AnalysisRunnerService } from './analysis-runner.service';
 import { CollectorsModule } from '../collectors/collectors.module';
 import { ScoringModule } from '../scoring/scoring.module';
+import { RecommendationsModule } from '../recommendations/recommendations.module';
 
 @Module({
-  imports: [CollectorsModule, ScoringModule],
+  imports: [CollectorsModule, ScoringModule, RecommendationsModule],
   controllers: [AnalysesController],
   providers: [AnalysesService, AnalysisRunnerService],
   exports: [AnalysesService],

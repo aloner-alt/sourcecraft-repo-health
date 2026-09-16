@@ -62,9 +62,16 @@ The API is available at `http://localhost:3000/api`, Swagger at `http://localhos
    GET /api/analyses/:analysisId
    ```
 
-The first implemented collector checks the repository tree for README, license,
-contributing guide, and CODEOWNERS files. Until the remaining categories are
-implemented, the response deliberately reports 15% data coverage.
+The documentation collector checks the repository tree for README, license,
+contributing guide, and CODEOWNERS files. The issues collector measures the
+resolution rate, freshness of open issues, and description coverage. The score
+reports 30% data coverage when both categories contain data and 15% when the
+issue tracker is empty.
+
+The analysis also creates prioritized recommendations for missing baseline
+documentation, stale issues, and incomplete issue descriptions. Each item has
+an explainable expected score increase, and their combined effect is stored as
+the analysis `potentialScore`.
 
 ## Next modules
 

@@ -49,3 +49,31 @@ export type SourceCraftTreeQuery = {
   recursive?: boolean;
   revision?: string;
 };
+
+export type SourceCraftIssue = {
+  id: string;
+  slug: string;
+  title: string;
+  description?: string;
+  created_at: string;
+  updated_at: string;
+  completed_at?: string;
+  status?: {
+    id: string;
+    slug: string;
+    name: string;
+    status_type?: string;
+  };
+};
+
+export type SourceCraftIssuePage = {
+  issues: SourceCraftIssue[];
+  next_page_token?: string;
+};
+
+export type SourceCraftIssueQuery = {
+  pageSize?: number;
+  pageToken?: string;
+  filter?: string;
+  sortBy?: string;
+};

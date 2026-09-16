@@ -66,4 +66,22 @@ describe('SourceCraftClient', () => {
       'https://api.sourcecraft.tech/repos/team/demo/trees?page_size=250&recursive=true&page_token=cursor&revision=main',
     );
   });
+
+  it('lists repository issues with pagination', async () => {
+    const fetchMock = jest.spyOn(global, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({ issues: [] }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    );
+
+    await client.listRepositoryIssues('team', 'demo', {
+      pageSize: 50,
+      pageToken: 'cursor',
+    });
+
+    expect(fetchMock.mock.calls[0][0].toString()).toBe(
+      'https://api.sourcecraft.tech/repos/team/demo/issues?page_size=50&page_token=cursor',
+    );
+  });
 });

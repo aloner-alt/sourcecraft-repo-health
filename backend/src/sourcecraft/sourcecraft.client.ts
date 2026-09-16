@@ -5,6 +5,8 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
+  SourceCraftIssuePage,
+  SourceCraftIssueQuery,
   SourceCraftRepository,
   SourceCraftRepositoryPage,
   SourceCraftTreePage,
@@ -54,6 +56,22 @@ export class SourceCraftClient {
         ...(query.pageToken ? { page_token: query.pageToken } : {}),
         ...(query.path ? { path: query.path } : {}),
         ...(query.revision ? { revision: query.revision } : {}),
+      },
+    );
+  }
+
+  listRepositoryIssues(
+    organizationSlug: string,
+    repositorySlug: string,
+    query: SourceCraftIssueQuery = {},
+  ): Promise<SourceCraftIssuePage> {
+    return this.request(
+      `/repos/${encodeURIComponent(organizationSlug)}/${encodeURIComponent(repositorySlug)}/issues`,
+      {
+        page_size: String(query.pageSize ?? 100),
+        ...(query.pageToken ? { page_token: query.pageToken } : {}),
+        ...(query.filter ? { filter: query.filter } : {}),
+        ...(query.sortBy ? { sort_by: query.sortBy } : {}),
       },
     );
   }
