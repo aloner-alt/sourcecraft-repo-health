@@ -1,10 +1,12 @@
 import { HealthController } from './health.controller';
 import { PrismaService } from '../database/prisma.service';
 import { ServiceUnavailableException } from '@nestjs/common';
+import { AnalysisQueueService } from '../analyses/analysis-queue.service';
 
 describe('HealthController', () => {
   const prisma = { $queryRaw: jest.fn() } as unknown as PrismaService;
-  const controller = new HealthController(prisma);
+  const queue = { isReady: jest.fn() } as unknown as AnalysisQueueService;
+  const controller = new HealthController(prisma, queue);
 
   it('returns the service health', () => {
     const response = controller.getHealth();
@@ -16,9 +18,11 @@ describe('HealthController', () => {
 
   it('reports database readiness', async () => {
     (prisma.$queryRaw as jest.Mock).mockResolvedValue([{ '?column?': 1 }]);
+    (queue.isReady as jest.Mock).mockResolvedValue(true);
     await expect(controller.getReadiness()).resolves.toEqual({
       status: 'ready',
       database: 'up',
+      queue: 'up',
     });
   });
 

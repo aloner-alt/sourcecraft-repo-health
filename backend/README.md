@@ -47,7 +47,7 @@ before starting the backend.
    POST /api/repositories/sourcecraft/:organizationSlug/:repositorySlug/sync
    ```
 
-2. Create an analysis:
+2. Create and queue an analysis:
 
    ```http
    POST /api/repositories/:repositoryId/analyses
@@ -56,7 +56,10 @@ before starting the backend.
    {"trigger":"MANUAL"}
    ```
 
-3. Run the currently available collectors:
+   The response contains the analysis ID and BullMQ job ID. A Redis worker runs
+   all collectors asynchronously.
+
+3. For local debugging only, run a queued analysis synchronously:
 
    ```http
    POST /api/analyses/:analysisId/run
@@ -114,5 +117,4 @@ coverage when SourceCraft returns issue data.
 ## Next modules
 
 - Yandex ID authentication
-- Background analysis jobs
 - Markdown and PDF reports

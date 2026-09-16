@@ -2,6 +2,7 @@ import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AnalysesService } from './analyses.service';
 import { AnalysisRunnerService } from './analysis-runner.service';
+import { AnalysisQueueService } from './analysis-queue.service';
 import { StartAnalysisDto } from './dto/start-analysis.dto';
 
 @ApiTags('analyses')
@@ -10,6 +11,7 @@ export class AnalysesController {
   constructor(
     private readonly analysesService: AnalysesService,
     private readonly analysisRunner: AnalysisRunnerService,
+    private readonly analysisQueue: AnalysisQueueService,
   ) {}
 
   @Post('repositories/:repositoryId/analyses')
@@ -18,7 +20,7 @@ export class AnalysesController {
     @Param('repositoryId') repositoryId: string,
     @Body() input: StartAnalysisDto,
   ) {
-    return this.analysesService.start(repositoryId, input.trigger);
+    return this.analysisQueue.start(repositoryId, input.trigger);
   }
 
   @Get('analyses/:id')
