@@ -18,5 +18,9 @@ cd backend
 cp .env.example .env
 pnpm install
 pnpm prisma:generate
+pnpm prisma:deploy
 pnpm start:dev
 ```
+
+Alternatively, `docker compose up --build` starts PostgreSQL, Redis, applies the
+committed database migration, and launches the backend on port 3000.

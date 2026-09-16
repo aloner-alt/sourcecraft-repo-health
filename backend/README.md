@@ -22,7 +22,7 @@ NestJS backend for collecting SourceCraft repository data, calculating an explai
    ```bash
    pnpm install
    pnpm prisma:generate
-   pnpm prisma:migrate
+   pnpm prisma:deploy
    ```
 
 4. Run the API:
@@ -31,7 +31,13 @@ NestJS backend for collecting SourceCraft repository data, calculating an explai
    pnpm start:dev
    ```
 
-The API is available at `http://localhost:3000/api`, Swagger at `http://localhost:3000/docs`, and the health endpoint at `http://localhost:3000/api/health`.
+The API is available at `http://localhost:3000/api`, Swagger at
+`http://localhost:3000/docs`, liveness at `http://localhost:3000/api/health`,
+and database readiness at `http://localhost:3000/api/health/ready`.
+
+For local schema development use `pnpm prisma:migrate`; committed migrations
+are applied with `pnpm prisma:deploy`. Docker Compose applies them automatically
+before starting the backend.
 
 ## Analysis flow
 
@@ -108,9 +114,5 @@ coverage when SourceCraft returns issue data.
 ## Next modules
 
 - Yandex ID authentication
-- Additional SourceCraft repository collectors
-- Security, activity, CI/CD, issues, and code-health metrics
-- Recommendations and potential score
-- Public repository ranking
 - Background analysis jobs
 - Markdown and PDF reports
