@@ -14,8 +14,13 @@ describe('RepositoriesService', () => {
     findUnique: jest.fn(),
     upsert: jest.fn(),
   };
+  const analysis = {
+    findFirst: jest.fn(),
+    findMany: jest.fn(),
+  };
   const prisma = {
     repository,
+    analysis,
     $transaction: jest.fn((operations: Promise<unknown>[]) =>
       Promise.all(operations),
     ),
@@ -83,6 +88,56 @@ describe('RepositoriesService', () => {
           sourcecraftId: 'source-1',
         }),
       }),
+    );
+  });
+
+  it('returns the latest completed health breakdown', async () => {
+    repository.findUnique.mockResolvedValue({ id: 'repo-1' });
+    analysis.findFirst.mockResolvedValue({
+      id: 'analysis-1',
+      score: 75,
+      potentialScore: 90,
+      dataCoverage: 30,
+      methodology: 'v1',
+      completedAt: new Date('2026-09-16T12:00:00Z'),
+      categories: [{ category: 'DOCUMENTATION', score: 75 }],
+    });
+
+    const result = await service.getHealth('repo-1');
+
+    expect(result).toMatchObject({
+      analysisId: 'analysis-1',
+      score: 75,
+      potentialScore: 90,
+    });
+    expect(analysis.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { repositoryId: 'repo-1', status: 'COMPLETED' },
+      }),
+    );
+  });
+
+  it('returns score history in chronological order', async () => {
+    repository.findUnique.mockResolvedValue({ id: 'repo-1' });
+    analysis.findMany.mockResolvedValue([
+      { id: 'new', score: 80 },
+      { id: 'old', score: 60 },
+    ]);
+
+    const result = await service.getScoreHistory('repo-1', 30);
+
+    expect(result.items.map((item) => item.id)).toEqual(['old', 'new']);
+    expect(analysis.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ take: 30 }),
+    );
+  });
+
+  it('reports when a repository has no completed analysis', async () => {
+    repository.findUnique.mockResolvedValue({ id: 'repo-1' });
+    analysis.findFirst.mockResolvedValue(null);
+
+    await expect(service.getMetrics('repo-1')).rejects.toBeInstanceOf(
+      NotFoundException,
     );
   });
 });

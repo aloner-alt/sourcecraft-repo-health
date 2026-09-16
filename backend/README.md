@@ -62,6 +62,15 @@ The API is available at `http://localhost:3000/api`, Swagger at `http://localhos
    GET /api/analyses/:analysisId
    ```
 
+## Frontend API
+
+- `GET /api/repositories/:id` — dashboard repository and latest analysis
+- `GET /api/repositories/:id/health` — latest score and category breakdown
+- `GET /api/repositories/:id/metrics` — detailed metrics and evidence
+- `GET /api/repositories/:id/recommendations` — prioritized improvement actions
+- `GET /api/repositories/:id/history?limit=30` — chronological score history
+- `GET /api/ranking` — public ranking with the same filters as repositories
+
 The documentation collector checks the repository tree for README, license,
 contributing guide, and CODEOWNERS files. The issues collector measures the
 resolution rate, freshness of open issues, and description coverage. The score

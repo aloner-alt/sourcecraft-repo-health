@@ -2,6 +2,7 @@ import { Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ListRepositoriesQueryDto } from './dto/list-repositories-query.dto';
 import { RepositoriesService } from './repositories.service';
+import { AnalysisHistoryQueryDto } from './dto/analysis-history-query.dto';
 
 @ApiTags('repositories')
 @Controller('repositories')
@@ -24,6 +25,33 @@ export class RepositoriesController {
   @ApiOperation({ summary: 'List and rank public SourceCraft repositories' })
   findPublic(@Query() query: ListRepositoriesQueryDto) {
     return this.repositoriesService.findPublic(query);
+  }
+
+  @Get(':id/health')
+  @ApiOperation({ summary: 'Get the latest completed health score' })
+  getHealth(@Param('id') id: string) {
+    return this.repositoriesService.getHealth(id);
+  }
+
+  @Get(':id/metrics')
+  @ApiOperation({ summary: 'Get metrics and evidence from the latest analysis' })
+  getMetrics(@Param('id') id: string) {
+    return this.repositoriesService.getMetrics(id);
+  }
+
+  @Get(':id/recommendations')
+  @ApiOperation({ summary: 'Get prioritized repository recommendations' })
+  getRecommendations(@Param('id') id: string) {
+    return this.repositoriesService.getRecommendations(id);
+  }
+
+  @Get(':id/history')
+  @ApiOperation({ summary: 'Get completed health score history' })
+  getScoreHistory(
+    @Param('id') id: string,
+    @Query() query: AnalysisHistoryQueryDto,
+  ) {
+    return this.repositoriesService.getScoreHistory(id, query.limit);
   }
 
   @Get(':id')

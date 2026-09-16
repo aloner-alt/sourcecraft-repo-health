@@ -1,5 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma, RepositoryVisibility } from '@prisma/client';
+import {
+  AnalysisStatus,
+  Prisma,
+  RepositoryVisibility,
+} from '@prisma/client';
 import { PrismaService } from '../database/prisma.service';
 import { SourceCraftClient } from '../sourcecraft/sourcecraft.client';
 import {
@@ -116,6 +120,112 @@ export class RepositoriesService {
     }
 
     return repository;
+  }
+
+  async getHealth(id: string) {
+    const analysis = await this.findLatestCompletedAnalysis(id, {
+      categories: {
+        orderBy: { category: 'asc' },
+        select: {
+          category: true,
+          score: true,
+          weight: true,
+          status: true,
+          summary: true,
+        },
+      },
+    });
+
+    return {
+      analysisId: analysis.id,
+      score: analysis.score,
+      potentialScore: analysis.potentialScore,
+      dataCoverage: analysis.dataCoverage,
+      methodology: analysis.methodology,
+      completedAt: analysis.completedAt,
+      categories: analysis.categories,
+    };
+  }
+
+  async getMetrics(id: string) {
+    const analysis = await this.findLatestCompletedAnalysis(id, {
+      categories: {
+        orderBy: { category: 'asc' },
+        include: {
+          metrics: {
+            orderBy: { key: 'asc' },
+            include: { evidence: true },
+          },
+        },
+      },
+    });
+
+    return { analysisId: analysis.id, categories: analysis.categories };
+  }
+
+  async getRecommendations(id: string) {
+    const analysis = await this.findLatestCompletedAnalysis(id, {
+      recommendations: {
+        orderBy: [{ priority: 'asc' }, { expectedScoreDelta: 'desc' }],
+        include: { evidence: true },
+      },
+    });
+
+    return {
+      analysisId: analysis.id,
+      potentialScore: analysis.potentialScore,
+      items: analysis.recommendations,
+    };
+  }
+
+  async getScoreHistory(id: string, limit: number) {
+    await this.requireRepository(id);
+    const items = await this.prisma.analysis.findMany({
+      where: {
+        repositoryId: id,
+        status: AnalysisStatus.COMPLETED,
+      },
+      select: {
+        id: true,
+        score: true,
+        potentialScore: true,
+        dataCoverage: true,
+        completedAt: true,
+      },
+      orderBy: { completedAt: 'desc' },
+      take: limit,
+    });
+
+    return { items: items.reverse() };
+  }
+
+  private async findLatestCompletedAnalysis<
+    T extends Prisma.AnalysisInclude,
+  >(repositoryId: string, include: T) {
+    await this.requireRepository(repositoryId);
+    const analysis = await this.prisma.analysis.findFirst({
+      where: { repositoryId, status: AnalysisStatus.COMPLETED },
+      include,
+      orderBy: { completedAt: 'desc' },
+    });
+
+    if (!analysis) {
+      throw new NotFoundException(
+        `Repository ${repositoryId} has no completed analysis.`,
+      );
+    }
+
+    return analysis as Prisma.AnalysisGetPayload<{ include: T }>;
+  }
+
+  private async requireRepository(id: string): Promise<void> {
+    const repository = await this.prisma.repository.findUnique({
+      where: { id },
+      select: { id: true },
+    });
+    if (!repository) {
+      throw new NotFoundException(`Repository ${id} was not found.`);
+    }
   }
 
   private getOrderBy(
