@@ -1,0 +1,12 @@
+/* Adapted from Jonathan Suh's Hamburgers (Squeeze), MIT.
+   https://github.com/jonsuh/hamburgers — see THIRD-PARTY-NOTICES.md. */
+.hamburger-squeeze{padding:10px;line-height:0;color:var(--foreground);border-radius:8px;cursor:pointer}
+.squeeze-box{display:inline-block;position:relative;width:22px;height:18px}
+.squeeze-inner,.squeeze-inner::before,.squeeze-inner::after{position:absolute;width:22px;height:2px;border-radius:2px;background:currentColor}
+.squeeze-inner{display:block;top:50%;margin-top:-1px;transition:transform .075s cubic-bezier(.55,.055,.675,.19)}
+.squeeze-inner::before,.squeeze-inner::after{content:"";display:block}
+.squeeze-inner::before{top:-7px;transition:top .075s .12s ease,opacity .075s ease}
+.squeeze-inner::after{bottom:-7px;transition:bottom .075s .12s ease,transform .075s cubic-bezier(.55,.055,.675,.19)}
+.hamburger-squeeze.is-active .squeeze-inner{transform:rotate(45deg);transition-delay:.12s;transition-timing-function:cubic-bezier(.215,.61,.355,1)}
+.hamburger-squeeze.is-active .squeeze-inner::before{top:0;opacity:0;transition:top .075s ease,opacity .075s .12s ease}
+.hamburger-squeeze.is-active .squeeze-inner::after{bottom:0;transform:rotate(-90deg);transition:bottom .075s ease,transform .075s .12s cubic-bezier(.215,.61,.355,1)}

@@ -1,5 +1,5 @@
 "use client";
-import { Download } from "lucide-react";
+import { AnimatedDownloadIcon } from "@/components/animated-download-icon";
 import { Button } from "@/components/ui/button";
 import { categoryDetailsPreview as categoriesPreview } from "@/lib/dashboard-details-preview";
 
@@ -11,5 +11,5 @@ export function DemoReport({ repository, score }: { repository: string; score: n
     link.href = url; link.download = `${repository}-demo.md`; link.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
-  return <Button variant="outline" onClick={download}><Download size={16} />Скачать демо Markdown</Button>;
+  return <Button className="report-download" variant="outline" onClick={download}><AnimatedDownloadIcon />Скачать демо Markdown</Button>;
 }

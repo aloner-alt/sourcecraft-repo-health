@@ -9,8 +9,8 @@ export const categoryDetailsPreview = [
 ] as const;
 
 export const recommendationsPreview = [
-  { id: "dependencies", categoryId: "security", priority: "high", title: "Обновить уязвимые зависимости", why: "Предупреждения AppSec требуют проверки затронутых пакетов и версий.", fact: "2 открытых предупреждения", source: "Демонстрационный результат AppSec", steps: ["Проверьте затронутые пакеты и версии в отчёте AppSec.", "Обновите зависимости до исправленных совместимых версий.", "Проверьте сборку и тесты, затем повторите анализ." ] },
-  { id: "old-issues", categoryId: "issues", priority: "medium", title: "Разобрать старые issues", why: "Долгое отсутствие ответа затрудняет понимание статуса обращений.", fact: "13 issues старше 90 дней", source: "Список issues · фильтр старше 90 дней", steps: ["Проверьте актуальность обращений старше 90 дней.", "Ответьте на актуальные issues и назначьте ответственных.", "Закройте неактуальные обращения с пояснением." ] },
+  { id: "dependencies", categoryId: "security", priority: "high", title: "Обновить уязвимые зависимости", expectedScoreGain: null as number | null, why: "Предупреждения AppSec требуют проверки затронутых пакетов и версий.", fact: "2 открытых предупреждения", source: "Демонстрационный результат AppSec", steps: ["Проверьте затронутые пакеты и версии в отчёте AppSec.", "Обновите зависимости до исправленных совместимых версий.", "Проверьте сборку и тесты, затем повторите анализ." ] },
+  { id: "old-issues", categoryId: "issues", priority: "medium", title: "Разобрать старые issues", expectedScoreGain: null as number | null, why: "Долгое отсутствие ответа затрудняет понимание статуса обращений.", fact: "13 issues старше 90 дней", source: "Список issues · фильтр старше 90 дней", steps: ["Проверьте актуальность обращений старше 90 дней.", "Ответьте на актуальные issues и назначьте ответственных.", "Закройте неактуальные обращения с пояснением." ] },
 ] as const;
 
 export type DashboardCategory = (typeof categoryDetailsPreview)[number];
