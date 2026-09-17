@@ -3,6 +3,8 @@ import { ArrowRight, BarChart3, ScanSearch, ShieldCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { connection } from "next/server";
+import { getRanking } from "@/lib/api";
 
 
 const steps = [
@@ -11,7 +13,13 @@ const steps = [
   ["03", "Исправляйте точечно", "Факты и рекомендации объяснят следующий полезный шаг."],
 ];
 
-export default function Home() {
+export default async function Home() {
+  await connection();
+  const ranking = await getRanking(1);
+  const featured = ranking.items[0];
+  const score = featured?.latestScore ?? 0;
+  const coverage = featured?.latestDataCoverage ?? 0;
+  const potential = featured?.latestPotentialScore ?? score;
   return <div className="min-h-screen overflow-x-hidden bg-background">
     
     <main>
@@ -20,12 +28,12 @@ export default function Home() {
           <Badge>REPOSITORY INTELLIGENCE</Badge>
           <h1 className="mt-6 text-5xl font-bold tracking-[-0.07em] sm:text-5xl">Понимайте здоровье репозитория, а не просто счёт.</h1>
           <p className="mt-6 max-w-xl text-lg leading-8 text-muted-foreground">SourceCraft Repo Health превращает сигналы разработки в понятную оценку, подтверждающие факты и следующие действия.</p>
-          <div className="mt-8 flex flex-wrap gap-3"><Button size="lg" render={<Link href="/ranking" />}>Открыть Топ-100 <ArrowRight className="size-4" /></Button><Button size="lg" variant="outline" render={<Link href="/repositories/api-gateway" />}>Посмотреть пример</Button></div>
-          <p className="mt-5 text-xs text-muted-foreground">Сейчас показана визуальная демо-версия. Подключение API появится после готовности OpenAPI.</p>
+          <div className="mt-8 flex flex-wrap gap-3"><Button size="lg" render={<Link href="/ranking" />}>Открыть рейтинг <ArrowRight className="size-4" /></Button>{featured && <Button size="lg" variant="outline" render={<Link href={`/repositories/${featured.id}`} />}>Посмотреть анализ</Button>}</div>
+          <p className="mt-5 text-xs text-muted-foreground">Данные загружаются из работающего Repo Health API.</p>
         </div>
         <Card className="relative h-fit self-start overflow-hidden border-blue-400/35 bg-card">
-          <CardHeader className="relative pb-3"><p className="text-sm text-muted-foreground">REPO HEALTH SCORE</p><CardTitle className="mt-4 flex items-end gap-3 text-7xl tracking-[-0.08em]">76<span className="mb-2 text-lg tracking-normal text-muted-foreground">/ 100</span></CardTitle><Badge className="mt-4">Good</Badge></CardHeader>
-          <CardContent className="relative space-y-5"><p className="text-sm leading-6 text-muted-foreground">Надёжный CI/CD и документация уже работают хорошо. Основной рост дадут security alerts и устаревшие issues.</p><div className="grid grid-cols-3 gap-3 border-t border-blue-200/15 pt-5 text-sm"><Metric label="Coverage" value="82%" /><Metric label="Категории" value="5 / 6" /><Metric label="Potential" value="88" /></div></CardContent>
+          <CardHeader className="relative pb-3"><p className="text-sm text-muted-foreground">REPO HEALTH SCORE</p><CardTitle className="mt-4 flex items-end gap-3 text-7xl tracking-[-0.08em]">{score}<span className="mb-2 text-lg tracking-normal text-muted-foreground">/ 100</span></CardTitle><Badge className="mt-4">{featured ? `${featured.ownerSlug}/${featured.name}` : "Нет данных"}</Badge></CardHeader>
+          <CardContent className="relative space-y-5"><p className="text-sm leading-6 text-muted-foreground">{featured?.description ?? "После первого анализа здесь появится лучший репозиторий рейтинга."}</p><div className="grid grid-cols-3 gap-3 border-t border-blue-200/15 pt-5 text-sm"><Metric label="Coverage" value={`${coverage}%`} /><Metric label="Репозитории" value={String(ranking.pagination.total)} /><Metric label="Potential" value={String(potential)} /></div></CardContent>
         </Card>
       </section>
       <section className="mx-auto max-w-7xl px-5 pb-20 lg:px-8"><div className="grid gap-4 md:grid-cols-3"><Feature icon={<BarChart3 />} title="Единый Score" text="Шесть категорий дают понятную общую картину." /><Feature icon={<ShieldCheck />} title="Факты, а не догадки" text="Каждый вывод связан с исходными данными." /><Feature icon={<ScanSearch />} title="Следующий шаг" text="Рекомендации показывают ожидаемый эффект." /></div><div className="mt-16"><p className="text-sm text-primary">КАК ЭТО РАБОТАЕТ</p><h2 className="mt-2 text-3xl font-bold tracking-tight">От репозитория к ясному плану улучшений</h2><div className="mt-6 grid gap-4 md:grid-cols-3">{steps.map(([number, title, text]) => <Card key={number}><CardContent className="p-5"><span className="text-sm font-semibold text-primary">{number}</span><h3 className="mt-8 font-semibold">{title}</h3><p className="mt-2 text-sm leading-6 text-muted-foreground">{text}</p></CardContent></Card>)}</div></div></section>

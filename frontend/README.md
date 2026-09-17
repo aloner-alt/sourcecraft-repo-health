@@ -1,22 +1,22 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SourceCraft Repo Health Frontend
+
+Next.js 16 interface for the real Repo Health API. Ranking, repository
+dashboard, category evidence, recommendations, analysis status, and report
+downloads are backed by the NestJS service rather than fixtures.
 
 ## Getting Started
 
-First, run the development server:
+From the repository root, run the complete stack:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+docker compose -p repo-health up -d --build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3001](http://localhost:3001). The backend API and Swagger
+remain available on ports `3000` and `/docs` respectively.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+For a standalone development server, copy `.env.example` to `.env.local` and
+run `npm run dev -- --port 3001` while the backend is available on port 3000.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
