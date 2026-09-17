@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X, House, Trophy, FolderGit2, ChartNoAxesCombined } from "lucide-react";
+import { Menu, X, House, Trophy, FolderGit2, ChartNoAxesCombined, Settings, LogIn } from "lucide-react";
 import { useState } from "react";
 import { ThemeToggle } from "@/components/theme-toggle";
 
@@ -11,6 +11,7 @@ const navigation = [
   { label: "Топ-100", href: "/ranking", icon: Trophy },
   { label: "Мои репозитории", href: "/my-repositories", icon: FolderGit2 },
   { label: "Обзор репозитория", href: "/repositories/api-gateway", icon: ChartNoAxesCombined },
+  { label: "Настройки", href: "/settings", icon: Settings },
 ];
 
 export function SiteHeader() {
@@ -25,7 +26,8 @@ export function SiteHeader() {
         const active = href === "/" ? pathname === "/" : href.startsWith("/repositories") ? pathname.startsWith("/repositories/") : pathname.startsWith(href);
         return <Link className="app-nav-link" key={href} href={href} aria-current={active ? "page" : undefined} onClick={() => setOpen(false)}><Icon size={17} />{label}</Link>;
       })}
+      <button type="button" className="app-nav-link mobile-account-entry yandex-entry" disabled title="Вход через Я ID будет доступен после подключения backend"><LogIn size={17} aria-hidden="true" />Войти через Я ID</button>
     </nav>
-    <p className="app-sidebar-footer">SourceCraft Repo Health<br />Демонстрационные данные</p>
+    <div className="sidebar-account"><button type="button" className="app-nav-link yandex-entry" disabled title="Вход через Я ID будет доступен после подключения backend"><LogIn size={17} aria-hidden="true" />Войти через Я ID</button><p className="app-sidebar-footer">SourceCraft Repo Health<br />Демонстрационные данные</p></div>
   </aside>;
 }

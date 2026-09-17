@@ -22,10 +22,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="ru"
+      data-scroll-behavior="smooth"
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <head><script dangerouslySetInnerHTML={{ __html: `try{document.documentElement.dataset.theme=localStorage.getItem('repo-health-theme')==='dark'?'dark':'light'}catch{document.documentElement.dataset.theme='light'}` }} /></head>
+      <head><script dangerouslySetInnerHTML={{ __html: `try{const t=localStorage.getItem('repo-health-theme');document.documentElement.dataset.theme=t==='dark'||(t==='system'&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';document.documentElement.dataset.motion=localStorage.getItem('repo-health-motion')==='off'?'off':'on'}catch{document.documentElement.dataset.theme='light'}` }} /></head>
       <body className="min-h-full flex flex-col"><a className="skip-link" href="#page-content">Перейти к содержимому</a><SiteHeader /><div className="app-content" id="page-content" tabIndex={-1}>{children}</div></body>
     </html>
   );

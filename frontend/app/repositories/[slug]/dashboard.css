@@ -26,7 +26,15 @@
 .repository-dashboard .repo-actions>a,.repository-dashboard .mobile-primary-action{display:flex;align-items:center;justify-content:center;gap:12px;min-height:44px;padding:11px 18px;border-radius:8px;background:var(--accent);color:#fff;font-size:14px;font-weight:600;transition:background .15s}
 .repository-dashboard .repo-actions>a:hover,.repository-dashboard .mobile-primary-action:hover{background:#1d50ca}
 .repository-dashboard .repo-actions>span{font-size:12px;color:var(--muted)}
-.repository-dashboard .overview-grid{display:flex;flex-direction:column;gap:16px;grid-row:2/4}
+.repository-dashboard .overview-grid{display:flex;flex-direction:column;gap:16px;grid-row:3/5}
+.repository-tools{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:center;gap:12px}.repository-tools>span{font-size:13px;color:var(--muted)}
+.repository-dashboard .score-number strong span{font:inherit;color:inherit;letter-spacing:inherit}
+.repository-dashboard .progress{animation:ring-fill .8s ease-out both}
+.repository-dashboard :is(.category-bar,.coverage-line) i{transform-origin:left;animation:bar-fill .8s ease-out both}
+.repository-dashboard details[open]>:is(.category-details,.recommendation-body){animation:detail-reveal .2s ease-out}
+@keyframes ring-fill{from{stroke-dasharray:0 100}}
+@keyframes bar-fill{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes detail-reveal{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
 .repository-dashboard :is(.score-panel,.coverage-panel,.potential-panel,.category,.facts-panel,.recommendations-panel){background:var(--surface);border:1px solid var(--line);border-radius:var(--radius)}
 .repository-dashboard :is(.score-panel,.coverage-panel,.potential-panel){padding:24px}
 .repository-dashboard .score-panel{text-align:center}
@@ -61,7 +69,7 @@
 .repository-dashboard .category{overflow:hidden;transition:border-color .15s}
 .repository-dashboard .category:hover{border-color:#b8c9e4}
 .repository-dashboard .category[open]{border-color:#a7beef}
-.repository-dashboard .category summary{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;padding:20px;cursor:pointer;list-style:none}
+.repository-dashboard .category summary{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:minmax(44px,auto) 4px minmax(45px,auto) auto;column-gap:14px;row-gap:10px;padding:20px;cursor:pointer;list-style:none}
 .repository-dashboard summary::-webkit-details-marker{display:none}
 .repository-dashboard .category-name{font-size:15px;font-weight:600;line-height:1.4}
 .repository-dashboard .category-name small{display:block;color:var(--muted);font-size:12px;font-weight:400;margin-top:6px}
@@ -70,9 +78,10 @@
 .repository-dashboard .category-value small{font-size:11px;color:var(--muted)}
 .repository-dashboard .no-data-label{font-size:12px;font-weight:500;color:var(--muted);background:#f1f4f8;padding:5px 8px;border-radius:6px}
 .repository-dashboard .category-bar{grid-column:1/-1;height:4px;background:var(--line);border-radius:4px;overflow:hidden}
+.repository-dashboard .category-bar-placeholder{visibility:hidden}
 .repository-dashboard .category-bar i{display:block;height:100%;background:var(--accent)}
-.repository-dashboard .category-reason{grid-column:1/-1;color:var(--muted);font-size:14px;line-height:1.6}
-.repository-dashboard .category-toggle{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;color:var(--accent);font-size:13px;font-weight:500;padding-top:4px}
+.repository-dashboard .category-reason{grid-column:1/-1;color:var(--muted);font-size:14px;line-height:1.6;align-self:end}
+.repository-dashboard .category-toggle{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;color:var(--accent);font-size:13px;font-weight:500;padding-top:0}
 .repository-dashboard .when-open{display:none}
 .repository-dashboard .category[open] .when-open{display:inline}
 .repository-dashboard .category[open] .when-closed{display:none}

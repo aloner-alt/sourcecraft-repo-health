@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { AnimatedNumber } from "@/components/animated-score";
 import { ArrowRight, Check, ChevronDown, CircleAlert, Info, X } from "lucide-react";
 import { categoryDetailsPreview as categories, recommendationsPreview as recommendations, type DashboardCategory } from "@/lib/dashboard-details-preview";
 
@@ -12,8 +13,8 @@ function CategoryCard({ category, opened, onToggle, summaryRef, onRecommendation
   return <details id={`category-${category.id}`} className={`category ${noData ? "no-data" : ""}`} open={opened}>
     <summary ref={summaryRef} onClick={event => { event.preventDefault(); onToggle(); }}>
       <span className="category-name">{category.name}<small>Вес категории {category.weight}%</small></span>
-      <span className="category-value">{noData ? <span className="no-data-label">Нет данных</span> : <><strong>{category.value}</strong><small>/ 100</small></>}</span>
-      {!noData && <span className="category-bar" aria-hidden="true"><i style={{ width: `${category.value}%` }} /></span>}
+      <span className="category-value">{noData ? <span className="no-data-label">Нет данных</span> : <><strong><AnimatedNumber value={category.value!} /></strong><small>/ 100</small></>}</span>
+      <span className={`category-bar${noData ? " category-bar-placeholder" : ""}`} aria-hidden="true">{!noData && <i style={{ width: `${category.value}%` }} />}</span>
       <span className="category-reason">{category.reason}</span>
       <span className="category-toggle">{opened ? "Скрыть детали" : "Метрики и факты"}<ChevronDown size={16} className="expand-icon" /></span>
     </summary>
@@ -37,7 +38,7 @@ export function DashboardDetails() {
     setOpened(previous => new Set([...previous, id]));
     requestAnimationFrame(() => {
       const element = summaryRefs.current[id];
-      element?.scrollIntoView({ block: "center", behavior: "instant" });
+      element?.scrollIntoView({ block: "center", behavior: "auto" });
       element?.focus({ preventScroll: true });
     });
   };
@@ -45,7 +46,7 @@ export function DashboardDetails() {
     setPriority("all"); setCategoryFilter("all");
     requestAnimationFrame(() => {
       const element = document.getElementById(`recommendation-${id}`) as HTMLDetailsElement | null;
-      if (element) { element.open = true; element.scrollIntoView({ block: "center", behavior: "instant" }); element.querySelector("summary")?.focus({ preventScroll: true }); }
+      if (element) { element.open = true; element.scrollIntoView({ block: "center", behavior: "auto" }); element.querySelector("summary")?.focus({ preventScroll: true }); }
     });
   };
   const toggleCategory = (id: string) => setOpened(previous => { const next = new Set(previous); if (next.has(id)) next.delete(id); else next.add(id); return next; });
