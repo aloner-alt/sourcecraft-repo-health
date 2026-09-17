@@ -1,0 +1,78 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+:root {
+  color-scheme: light;
+  --background: #f6f7f9;
+  --foreground: #182029;
+  --card: #fff;
+  --card-foreground: #182029;
+  --primary: #2563eb;
+  --primary-foreground: #fff;
+  --secondary: #edf2fc;
+  --secondary-foreground: #182029;
+  --muted: #f0f2f5;
+  --muted-foreground: #646d78;
+  --accent: #edf2fc;
+  --accent-foreground: #2563eb;
+  --border: #dfe4e9;
+  --ring: #2563eb;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --background:#10151e;--foreground:#e7edf5;--card:#19212d;
+  --card-foreground:#e7edf5;--primary:#82adff;--primary-foreground:#10151e;
+  --secondary:#243249;--secondary-foreground:#e7edf5;--muted:#202a38;
+  --muted-foreground:#aab8cb;--accent:#243249;--accent-foreground:#82adff;
+  --border:#344155;--ring:#82adff;
+}
+:root[data-theme="dark"] .text-emerald-700{color:#8ad8b6}
+:root[data-theme="dark"] .text-amber-700{color:#e9c47e}
+:root[data-theme="dark"] .text-rose-700{color:#f6a8b7}
+.theme-toggle{display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--foreground);font-size:13px;cursor:pointer}
+.theme-toggle:hover{background:var(--accent)}
+.app-sidebar-top .theme-toggle{margin-top:20px;width:100%}
+@media(max-width:900px){.app-sidebar-top{gap:8px}.app-sidebar-top .theme-toggle{margin:0 0 0 auto;width:44px;padding:0;flex-shrink:0}.theme-toggle span{display:none}}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-border: var(--border);
+  --color-ring: var(--ring);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+
+:is(a,button,input,select,summary):focus-visible{outline:3px solid var(--primary);outline-offset:3px}
+.skip-link{position:fixed;top:12px;left:12px;z-index:100;background:var(--card);color:var(--primary);border:1px solid var(--border);padding:12px 16px;border-radius:8px;transform:translateY(-160%)}
+.skip-link:focus{transform:translateY(0)}
+.mobile-menu-button{min-width:44px;min-height:44px;align-items:center;justify-content:center}
+.app-nav-link{min-height:44px;font-size:14px!important}
+.app-content h1{overflow-wrap:anywhere}
+.app-content main{min-width:0}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+@media(max-width:640px){.app-content h1{font-size:30px;letter-spacing:-.7px}}
+
+/* Shared light workspace, selected from dashboard concept 11. */
+.app-sidebar{position:fixed;inset:0 auto 0 0;width:210px;background:var(--card);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:28px 18px;z-index:30}
+.app-brand{display:inline-flex;white-space:nowrap;font-size:17px;font-weight:700;letter-spacing:-.7px}.app-brand span{color:var(--primary);white-space:pre}
+.app-sidebar-label{font-size:10px;letter-spacing:1.4px;color:var(--muted-foreground);margin:40px 12px 16px}.app-sidebar nav{display:grid;gap:6px}.app-nav-link{display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:7px;font-size:13px;color:var(--muted-foreground)}.app-nav-link:hover,.app-nav-link[aria-current=page]{background:var(--accent);color:var(--primary)}.app-sidebar-footer{margin-top:auto;color:var(--muted-foreground);font-size:11px;padding:18px 12px 0;border-top:1px solid var(--border)}.app-content{margin-left:210px;min-width:0;flex:1}.mobile-menu-button{display:none}
+@media(max-width:900px){.app-sidebar{position:sticky;top:0;inset-inline:0;width:auto;padding:15px 20px;display:block}.app-sidebar-top{display:flex;align-items:center;justify-content:space-between}.mobile-menu-button{display:block}.app-sidebar-label,.app-sidebar-footer{display:none}.app-sidebar nav{display:none;margin-top:15px}.app-sidebar nav[data-open=true]{display:grid}.app-content{margin-left:0}}

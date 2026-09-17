@@ -1,0 +1,11 @@
+import Link from "next/link";
+import { AlertCircle, ArrowLeft, RotateCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
+
+export function PageSkeleton() { return <main aria-busy="true" aria-label="Загрузка страницы" className="mx-auto max-w-7xl motion-safe:animate-pulse px-5 py-10 lg:px-8"><p role="status" className="sr-only">Загрузка страницы…</p><div className="h-4 w-32 rounded bg-secondary" /><div className="mt-4 h-10 w-72 max-w-full rounded bg-secondary" /><div className="mt-3 h-5 w-96 max-w-full rounded bg-secondary/70" /><div className="mt-10 grid gap-4 md:grid-cols-3"><SkeletonCard /><SkeletonCard /><SkeletonCard /></div><div className="mt-6 h-72 rounded-xl border border-border bg-card" /></main>; }
+
+export function ErrorState({ reset }: { reset: () => void }) { return <main className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-xl items-center px-5 py-16 text-center"><div className="w-full"><span className="mx-auto flex size-12 items-center justify-center rounded-full bg-rose-400/10 text-rose-700"><AlertCircle className="size-6" /></span><h1 className="mt-6 text-3xl font-bold tracking-tight">Не удалось загрузить страницу</h1><p className="mt-3 text-muted-foreground">Попробуйте ещё раз. Если проблема повторится, вернитесь на главную страницу.</p><div className="mt-7 flex justify-center gap-3"><Button onClick={reset}><RotateCw className="size-4" />Повторить</Button><Button variant="outline" render={<Link href="/" />}>На главную</Button></div></div></main>; }
+
+export function NotFoundState() { return <main className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-xl items-center px-5 py-16 text-center"><div className="w-full"><p className="text-6xl font-bold tracking-[-0.1em] text-primary">404</p><h1 className="mt-5 text-3xl font-bold tracking-tight">Страница не найдена</h1><p className="mt-3 text-muted-foreground">Возможно, ссылка устарела или репозиторий больше недоступен.</p><Button className="mt-7" render={<Link href="/ranking" />}><ArrowLeft className="size-4" />К рейтингу</Button></div></main>; }
+
+function SkeletonCard() { return <div className="h-40 rounded-xl border border-border bg-card p-5"><div className="h-4 w-24 rounded bg-secondary" /><div className="mt-7 h-8 w-16 rounded bg-secondary" /><div className="mt-6 h-3 w-full rounded bg-secondary/70" /></div>; }
