@@ -17,9 +17,9 @@ export default async function Home() {
   await connection();
   const ranking = await getRanking(1);
   const featured = ranking.items[0];
-  const score = featured?.latestScore ?? 0;
-  const coverage = featured?.latestDataCoverage ?? 0;
-  const potential = featured?.latestPotentialScore ?? score;
+  const score = Math.round(featured?.latestScore ?? 0);
+  const coverage = Math.round(featured?.latestDataCoverage ?? 0);
+  const potential = Math.round(featured?.latestPotentialScore ?? score);
   return <div className="min-h-screen overflow-x-hidden bg-background">
     
     <main>
