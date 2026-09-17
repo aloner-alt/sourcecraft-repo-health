@@ -75,6 +75,15 @@ before starting the backend.
    GET /api/analyses/:analysisId
    ```
 
+For a complete local sync-and-analyze smoke test without a browser session:
+
+```bash
+pnpm analyze:repo <organization> <repository>
+```
+
+The command uses the configured SourceCraft token, queues the analysis through
+BullMQ, waits up to five minutes, and prints a secret-free result summary.
+
 ## Frontend API
 
 - `GET /api/repositories/:id` — dashboard repository and latest analysis

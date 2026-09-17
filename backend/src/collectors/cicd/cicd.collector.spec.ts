@@ -1,4 +1,5 @@
 import { DataStatus } from '@prisma/client';
+import { BadGatewayException } from '@nestjs/common';
 import { SourceCraftClient } from '../../sourcecraft/sourcecraft.client';
 import { CiCdCollector } from './cicd.collector';
 
@@ -21,5 +22,23 @@ describe('CiCdCollector', () => {
   it('returns no data when CI has never run', async () => {
     (sourceCraft.listRepositoryCiRuns as jest.Mock).mockResolvedValue({ runs: [] });
     await expect(collector.collect('team', 'demo')).resolves.toMatchObject({ score: null, status: DataStatus.NO_DATA });
+  });
+
+  it('reports permission denied without failing the whole analysis', async () => {
+    (sourceCraft.listRepositoryCiRuns as jest.Mock).mockRejectedValue(
+      new BadGatewayException({
+        message: 'SourceCraft API request failed.',
+        sourceStatus: 403,
+        path: '/repos/team/demo/cicd/runs',
+      }),
+    );
+
+    await expect(collector.collect('team', 'demo')).resolves.toEqual({
+      score: null,
+      status: DataStatus.PERMISSION_DENIED,
+      summary:
+        'SourceCraft did not grant access to this repository’s CI/CD runs.',
+      metrics: [],
+    });
   });
 });
