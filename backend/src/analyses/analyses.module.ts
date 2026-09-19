@@ -10,6 +10,7 @@ import { ANALYSIS_QUEUE } from './analysis-queue.constants';
 import { AnalysisQueueService } from './analysis-queue.service';
 import { AnalysisProcessor } from './analysis.processor';
 import { AuthModule } from '../auth/auth.module';
+import { RepositoriesModule } from '../repositories/repositories.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { AuthModule } from '../auth/auth.module';
     RecommendationsModule,
     BullModule.registerQueue({ name: ANALYSIS_QUEUE }),
     AuthModule,
+    RepositoriesModule,
   ],
   controllers: [AnalysesController],
   providers: [

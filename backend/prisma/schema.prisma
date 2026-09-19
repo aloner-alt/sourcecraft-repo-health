@@ -27,12 +27,36 @@ model Repository {
   createdAt            DateTime             @default(now())
   updatedAt            DateTime             @updatedAt
   analyses             Analysis[]
+  accesses             RepositoryAccess[]
 
   @@unique([ownerSlug, slug])
   @@index([primaryLanguage])
   @@index([likesCount])
   @@index([lastActivityAt])
   @@index([latestScore])
+}
+
+model User {
+  id                 String             @id @default(cuid())
+  yandexId           String             @unique
+  login              String
+  email              String?
+  name               String?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  repositoryAccesses RepositoryAccess[]
+}
+
+model RepositoryAccess {
+  id           String       @id @default(cuid())
+  userId       String
+  repositoryId String
+  createdAt    DateTime     @default(now())
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  repository   Repository   @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, repositoryId])
+  @@index([repositoryId])
 }
 
 model Analysis {

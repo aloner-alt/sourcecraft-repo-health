@@ -1,6 +1,7 @@
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { AuthService } from './auth.service';
+import { PrismaService } from '../database/prisma.service';
 
 describe('AuthService', () => {
   const config = {
@@ -17,7 +18,10 @@ describe('AuthService', () => {
     signAsync: jest.fn().mockResolvedValue('session-jwt'),
     verifyAsync: jest.fn(),
   } as unknown as JwtService;
-  const service = new AuthService(config, jwt);
+  const prisma = {
+    user: { upsert: jest.fn().mockResolvedValue({ id: 'app-user-1' }) },
+  } as unknown as PrismaService;
+  const service = new AuthService(config, jwt, prisma);
 
   afterEach(() => jest.restoreAllMocks());
 
@@ -55,6 +59,7 @@ describe('AuthService', () => {
 
     expect(result).toEqual({
       user: {
+        id: 'app-user-1',
         sub: 'user-1',
         login: 'demo',
         email: 'demo@yandex.ru',
@@ -67,6 +72,9 @@ describe('AuthService', () => {
       expect.objectContaining({
         headers: { Authorization: 'OAuth yandex-token' },
       }),
+    );
+    expect(prisma.user.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { yandexId: 'user-1' } }),
     );
   });
 });

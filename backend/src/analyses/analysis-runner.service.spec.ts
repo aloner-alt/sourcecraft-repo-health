@@ -53,6 +53,7 @@ describe('AnalysisRunnerService', () => {
       .mockResolvedValueOnce({ id: 'analysis-1', status: 'COMPLETED' });
     (documentation.collect as jest.Mock).mockResolvedValue({
       score: 40,
+      status: 'AVAILABLE',
       summary: '1 of 4 baseline documentation files found.',
       metrics: [
         {
@@ -100,7 +101,7 @@ describe('AnalysisRunnerService', () => {
     expect(result).toEqual({ id: 'analysis-1', status: 'COMPLETED' });
   });
 
-  it('marks an analysis as failed when collection fails', async () => {
+  it('keeps the analysis usable when one collection source fails', async () => {
     (analyses.findById as jest.Mock).mockResolvedValue({
       repository: { ownerSlug: 'team', slug: 'demo' },
     });
@@ -123,11 +124,21 @@ describe('AnalysisRunnerService', () => {
     (security.collect as jest.Mock).mockResolvedValue({ score: 0, status: 'AVAILABLE', summary: '', metrics: [] });
     (codeHealth.collect as jest.Mock).mockResolvedValue({ score: 0, status: 'AVAILABLE', summary: '', metrics: [] });
 
-    await expect(service.run('analysis-1')).rejects.toThrow('API unavailable');
-    expect(analyses.fail).toHaveBeenCalledWith(
-      'analysis-1',
-      'ANALYSIS_FAILED',
-      'API unavailable',
+    await expect(service.run('analysis-1')).resolves.toBeDefined();
+    expect(prisma.categoryResult.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          category: 'DOCUMENTATION',
+          score: null,
+          status: 'COLLECTION_ERROR',
+        }),
+      }),
     );
+    expect(analyses.complete).toHaveBeenCalledWith('analysis-1', {
+      score: 0,
+      potentialScore: 0,
+      dataCoverage: 40,
+    });
+    expect(analyses.fail).not.toHaveBeenCalled();
   });
 });

@@ -22,8 +22,11 @@ DATABASE_URL=postgresql://repo_health:repo_health@localhost:5432/repo_health?sch
 REDIS_HOST=localhost
 REDIS_PORT=6379
 REDIS_PASSWORD=
-FRONTEND_URL=http://localhost:5173
+FRONTEND_URL=http://localhost:3001
 SOURCECRAFT_API_BASE_URL=https://api.sourcecraft.tech
+SOURCECRAFT_ORGANIZATIONS=divkit
+SCHEDULE_ENABLED=true
+ANALYSIS_INTERVAL_HOURS=24
 YANDEX_CALLBACK_URL=http://localhost:3000/api/auth/yandex/callback
 ```
 
@@ -91,10 +94,13 @@ DATABASE_URL=postgresql://repo_health:repo_health@localhost:5432/repo_health?sch
 REDIS_HOST=localhost
 REDIS_PORT=6379
 REDIS_PASSWORD=
-FRONTEND_URL=http://localhost:5173
+FRONTEND_URL=http://localhost:3001
 AUTH_JWT_SECRET=<generated locally>
 SOURCECRAFT_API_BASE_URL=https://api.sourcecraft.tech
 SOURCECRAFT_TOKEN=<SourceCraft PAT>
+SOURCECRAFT_ORGANIZATIONS=divkit
+SCHEDULE_ENABLED=true
+ANALYSIS_INTERVAL_HOURS=24
 YANDEX_CLIENT_ID=<Yandex application Client ID>
 YANDEX_CLIENT_SECRET=<Yandex application Client secret>
 YANDEX_CALLBACK_URL=http://localhost:3000/api/auth/yandex/callback

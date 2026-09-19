@@ -5,6 +5,7 @@ import {
   DocumentationCollectionResult,
   DocumentationMetric,
 } from './documentation.types';
+import { DataStatus } from '@prisma/client';
 
 const DOCUMENTATION_FILES = [
   { key: 'readme', pattern: /^readme(?:\..+)?$/i, weight: 0.4, label: 'README' },
@@ -36,6 +37,7 @@ export class DocumentationCollector {
 
     return {
       score,
+      status: DataStatus.AVAILABLE,
       summary: `${found} of ${metrics.length} baseline documentation files found.`,
       metrics,
     };

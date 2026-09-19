@@ -47,7 +47,7 @@ export class HealthController {
       ),
       frontendUrl: this.config.get<string>(
         'FRONTEND_URL',
-        'http://localhost:5173',
+        'http://localhost:3001',
       ),
     };
   }

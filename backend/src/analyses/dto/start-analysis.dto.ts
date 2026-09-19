@@ -1,10 +1,10 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { AnalysisTrigger } from '@prisma/client';
-import { IsEnum, IsOptional } from 'class-validator';
+import { IsIn, IsOptional } from 'class-validator';
 
 export class StartAnalysisDto {
-  @ApiPropertyOptional({ enum: AnalysisTrigger, default: AnalysisTrigger.MANUAL })
+  @ApiPropertyOptional({ enum: [AnalysisTrigger.MANUAL, AnalysisTrigger.REANALYSIS], default: AnalysisTrigger.MANUAL })
   @IsOptional()
-  @IsEnum(AnalysisTrigger)
+  @IsIn([AnalysisTrigger.MANUAL, AnalysisTrigger.REANALYSIS])
   trigger: AnalysisTrigger = AnalysisTrigger.MANUAL;
 }

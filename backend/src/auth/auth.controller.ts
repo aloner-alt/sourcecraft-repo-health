@@ -51,7 +51,7 @@ export class AuthController {
       sessionToken,
       this.cookieOptions(7 * 24 * 60 * 60 * 1_000),
     );
-    response.redirect(`${this.config.get('FRONTEND_URL', 'http://localhost:5173')}/auth/callback?success=true`);
+    response.redirect(`${this.config.get('FRONTEND_URL', 'http://localhost:3001')}/auth/callback?success=true`);
   }
 
   @Get('me')

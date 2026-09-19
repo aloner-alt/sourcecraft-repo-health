@@ -8,6 +8,7 @@ describe('RecommendationsService', () => {
     const result = service.build(
       {
         score: 40,
+        status: 'AVAILABLE',
         summary: '',
         metrics: [
           {

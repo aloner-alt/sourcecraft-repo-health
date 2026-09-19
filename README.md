@@ -1,26 +1,28 @@
 # SourceCraft Repo Health
 
-Hackathon service for analyzing SourceCraft repositories and calculating an explainable Repo Health Score.
+Веб-сервис для регулярной оценки здоровья репозиториев SourceCraft. Он рассчитывает объяснимый Repo Health Score, показывает факты по шести категориям, формирует приоритетные рекомендации и строит публичный рейтинг.
 
-## Applications
+## Возможности
 
-- `backend/` - NestJS and TypeScript API, background analysis, scoring, recommendations, and reports.
-- `frontend/` - React application (to be added by the frontend team).
+- реальные данные SourceCraft API, без демонстрационных результатов;
+- шесть категорий: Documentation, CI/CD, Security, Activity, Issues, Code Health;
+- различение низкой оценки, отсутствия данных и ошибки источника;
+- Я ID, персональная рабочая область, первичный и повторный анализ;
+- BullMQ worker, retry и периодический пересчёт известных публичных репозиториев;
+- Dashboard, история Score, рейтинг, Markdown- и PDF-отчёты;
+- PostgreSQL, Redis и воспроизводимый запуск через Docker Compose.
 
-## Current status
+## Быстрый запуск
 
-The repository contains an initial runnable NestJS backend, Prisma schema, and Docker Compose services for PostgreSQL and Redis.
-
-## Quick start
+1. Скопируйте `backend/.env.example` в `backend/.env` и заполните секреты.
+2. Выполните:
 
 ```bash
-cd backend
-cp .env.example .env
-pnpm install
-pnpm prisma:generate
-pnpm prisma:deploy
-pnpm start:dev
+docker compose up --build
 ```
 
-Alternatively, `docker compose up --build` starts PostgreSQL, Redis, applies the
-committed database migration, and launches the backend on port 3000.
+- Frontend: http://localhost:3001
+- API: http://localhost:3000/api
+- Swagger: http://localhost:3000/docs
+
+Подробности: [соответствие ТЗ](docs/COMPLIANCE.md), [архитектура](docs/ARCHITECTURE.md), [методология](docs/METHODOLOGY.md), [сценарий демонстрации](docs/DEMO.md) и [настройка окружения](backend/docs/ENVIRONMENT.md).

@@ -10,6 +10,7 @@ export type YandexProfile = {
 };
 
 export type SessionUser = {
+  id: string;
   sub: string;
   login: string;
   email?: string;

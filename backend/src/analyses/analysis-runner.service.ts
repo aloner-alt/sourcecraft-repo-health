@@ -38,26 +38,26 @@ export class AnalysisRunnerService {
 
     try {
       const [documentationResult, issuesResult, cicdResult, securityResult, codeHealthResult] = await Promise.all([
-        this.documentation.collect(
+        this.collectSafely('documentation', this.documentation.collect(
           analysis.repository.ownerSlug,
           analysis.repository.slug,
-        ),
-        this.issues.collect(
+        )),
+        this.collectSafely('issues', this.issues.collect(
           analysis.repository.ownerSlug,
           analysis.repository.slug,
-        ),
-        this.cicd.collect(
+        )),
+        this.collectSafely('CI/CD', this.cicd.collect(
           analysis.repository.ownerSlug,
           analysis.repository.slug,
-        ),
-        this.security.collect(
+        )),
+        this.collectSafely('security', this.security.collect(
           analysis.repository.ownerSlug,
           analysis.repository.slug,
-        ),
-        this.codeHealth.collect(
+        )),
+        this.collectSafely('code health', this.codeHealth.collect(
           analysis.repository.ownerSlug,
           analysis.repository.slug,
-        ),
+        )),
       ]);
       const activityResult = this.activity.collect(
         analysis.repository.lastActivityAt,
@@ -71,7 +71,7 @@ export class AnalysisRunnerService {
             category: PrismaHealthCategory.DOCUMENTATION,
             score: documentationResult.score,
             weight: CATEGORY_WEIGHTS[HealthCategory.DOCUMENTATION],
-            status: DataStatus.AVAILABLE,
+            status: documentationResult.status,
             summary: documentationResult.summary,
             metrics: {
               create: documentationResult.metrics.map((metric) => ({
@@ -79,7 +79,7 @@ export class AnalysisRunnerService {
                 rawValue: metric.rawValue as Prisma.InputJsonValue,
                 normalizedScore: metric.normalizedScore,
                 weight: metric.weight,
-                status: DataStatus.AVAILABLE,
+                status: documentationResult.status,
                 source: metric.source,
                 explanation: metric.explanation,
                 evidence: {
@@ -218,10 +218,7 @@ export class AnalysisRunnerService {
       ]);
 
       const availableCategories = [
-        {
-          category: HealthCategory.DOCUMENTATION,
-          score: documentationResult.score,
-        },
+        ...(documentationResult.score === null ? [] : [{ category: HealthCategory.DOCUMENTATION, score: documentationResult.score }]),
         ...(issuesResult.score === null
           ? []
           : [{ category: HealthCategory.ISSUES, score: issuesResult.score }]),
@@ -236,8 +233,8 @@ export class AnalysisRunnerService {
         ...(cicdResult.score === null
           ? []
           : [{ category: HealthCategory.CI_CD, score: cicdResult.score }]),
-        { category: HealthCategory.SECURITY, score: securityResult.score },
-        { category: HealthCategory.CODE_HEALTH, score: codeHealthResult.score },
+        ...(securityResult.score === null ? [] : [{ category: HealthCategory.SECURITY, score: securityResult.score }]),
+        ...(codeHealthResult.score === null ? [] : [{ category: HealthCategory.CODE_HEALTH, score: codeHealthResult.score }]),
       ];
       const health = this.scoring.calculate(availableCategories);
 
@@ -304,6 +301,24 @@ export class AnalysisRunnerService {
       const message = error instanceof Error ? error.message : 'Unknown error';
       await this.analyses.fail(id, 'ANALYSIS_FAILED', message);
       throw error;
+    }
+  }
+
+  private async collectSafely<T extends {
+    score: number | null;
+    status: DataStatus;
+    summary: string;
+    metrics: unknown[];
+  }>(name: string, collection: Promise<T>): Promise<T> {
+    try {
+      return await collection;
+    } catch (error) {
+      return {
+        score: null,
+        status: DataStatus.COLLECTION_ERROR,
+        summary: `${name} source is temporarily unavailable: ${error instanceof Error ? error.message : 'unknown error'}`,
+        metrics: [],
+      } as unknown as T;
     }
   }
 }
