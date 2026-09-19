@@ -2,16 +2,20 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { House, Trophy, FolderGit2, ChartNoAxesCombined, Settings, LogIn } from "lucide-react";
+import { FlaskConical, LogIn } from "lucide-react";
+import { AnimatedTrophyIcon } from "@/components/animated-trophy-icon";
+import { AnimatedHomeIcon } from "@/components/animated-home-icon";
+import { AnimatedFolderGitIcon } from "@/components/animated-folder-git-icon";
 import { useState } from "react";
-import "./hamburger-squeeze.css";
+import { AnimatedChartIcon, AnimatedMenuIcon, AnimatedSettingsIcon } from "@/components/animated-navigation-icons";
 
 const navigation = [
-  { label: "Главная", href: "/", icon: House },
-  { label: "Топ-100", href: "/ranking", icon: Trophy },
-  { label: "Мои репозитории", href: "/my-repositories", icon: FolderGit2 },
-  { label: "Обзор репозитория", href: "/repositories/api-gateway", icon: ChartNoAxesCombined },
-  { label: "Настройки", href: "/settings", icon: Settings },
+  { label: "Главная", href: "/", icon: AnimatedHomeIcon },
+  { label: "Топ-100", href: "/ranking", icon: AnimatedTrophyIcon },
+  { label: "Мои репозитории", href: "/my-repositories", icon: AnimatedFolderGitIcon },
+  { label: "Обзор репозитория", href: "/repositories/api-gateway", icon: AnimatedChartIcon },
+  { label: "Настройки", href: "/settings", icon: AnimatedSettingsIcon },
+  { label: "Test", href: "/test", icon: FlaskConical },
 ];
 
 export function SiteHeader() {
@@ -19,7 +23,7 @@ export function SiteHeader() {
   const [open, setOpen] = useState(false);
   return <aside className="app-sidebar">
     <div className="app-sidebar-top"><Link href="/" className="app-brand">sourcecraft<span> / health</span></Link>
-    <button type="button" className={`mobile-menu-button hamburger-squeeze${open ? " is-active" : ""}`} onClick={() => setOpen(previous => !previous)} onKeyDown={event => { if (event.key === "Escape") setOpen(false); }} aria-label={open ? "Закрыть меню" : "Открыть меню"} aria-expanded={open} aria-controls="workspace-navigation"><span className="squeeze-box" aria-hidden="true"><span className="squeeze-inner" /></span></button></div>
+    <button type="button" className="mobile-menu-button animated-menu-button" onClick={() => setOpen(previous => !previous)} onKeyDown={event => { if (event.key === "Escape") setOpen(false); }} aria-label={open ? "Закрыть меню" : "Открыть меню"} aria-expanded={open} aria-controls="workspace-navigation"><AnimatedMenuIcon open={open} /></button></div>
     <p className="app-sidebar-label">РАБОЧАЯ ОБЛАСТЬ</p>
     <div className="mobile-navigation-reveal" data-open={open}><nav id="workspace-navigation" aria-label="Основная навигация" data-open={open} onKeyDown={event => { if (event.key === "Escape") { setOpen(false); document.querySelector<HTMLButtonElement>(".mobile-menu-button")?.focus(); } }}>
       {navigation.map(({ label, href, icon: Icon }) => {

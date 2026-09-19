@@ -144,6 +144,11 @@
 .repository-dashboard .dashboard-filters button{border:1px solid var(--line);border-radius:7px;padding:8px 12px;min-height:40px;font-size:13px;cursor:pointer;background:var(--surface);color:var(--muted)}
 .repository-dashboard .dashboard-filters button[aria-pressed=true]{background:var(--soft);color:var(--dashboard-accent);border-color:#b6caf6;font-weight:500}
 .repository-dashboard .recommendation-category{margin-left:auto;max-width:100%}
+.repository-dashboard .dashboard-filters .category-filter-trigger{height:40px;max-width:100%;color:var(--ink);padding:0 12px}
+.repository-dashboard .dashboard-filters .category-filter-trigger:hover,.repository-dashboard .dashboard-filters .category-filter-trigger[data-popup-open]{border-color:var(--line);background:var(--soft)}
+.repository-dashboard .category-filter-trigger:not(:focus-visible){outline:none;box-shadow:none}
+.repository-dashboard .category-filter-trigger svg{flex-shrink:0}
+@media(max-width:700px){.repository-dashboard .category-filter-trigger{width:100%}}
 .repository-dashboard .recommendation-category select{border:1px solid var(--line);border-radius:7px;min-height:40px;background:var(--surface);color:var(--ink);font-size:13px;padding:8px;max-width:100%}
 .repository-dashboard .filter-result{font-size:12px;color:var(--muted);margin-bottom:8px}
 .repository-dashboard .panel-intro{font-size:14px;color:var(--muted);margin:-4px 0 20px}

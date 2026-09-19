@@ -30,7 +30,7 @@ export function useButtonIconAnimation() {
   const reducedMotion = useReducedMotion();
 
   useEffect(() => {
-    const button = ref.current?.closest("button");
+    const button = ref.current?.closest("button, a");
     if (!button) return;
     const start = () => {
       if (reducedMotion || document.documentElement.dataset.motion === "off") return;
