@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { ArrowRight, BarChart3, ScanSearch, ShieldCheck } from "lucide-react";
+import { BarChart3, ScanSearch, ShieldCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AnimatedNumber } from "@/components/animated-score";
+import { CheckRepositoryButton } from "@/components/check-repository-button";
 
 
 const steps = [
@@ -21,7 +22,7 @@ export default function Home() {
           <Badge>REPOSITORY INTELLIGENCE</Badge>
           <h1 className="mt-6 text-5xl font-bold tracking-[-0.07em] sm:text-5xl">Проверьте здоровье своего репозитория.</h1>
           <p className="mt-6 max-w-xl text-lg leading-8 text-muted-foreground">SourceCraft Repo Health превращает сигналы разработки в понятную оценку, подтверждающие факты и следующие действия.</p>
-          <div className="mt-8 flex flex-wrap gap-3"><Button size="lg" render={<Link href="/check-repository" />}>Проверить свой репозиторий <ArrowRight className="size-4" /></Button><Button size="lg" variant="outline" render={<Link href="/repositories/api-gateway" />}>Посмотреть пример</Button></div>
+          <div className="mt-8 flex flex-wrap gap-3"><CheckRepositoryButton /><Button size="lg" variant="outline" render={<Link href="/repositories/api-gateway" />}>Посмотреть пример</Button></div>
           <Link href="/ranking" className="mt-4 inline-flex min-h-11 items-center text-sm font-medium text-primary">Посмотреть Топ-100 →</Link>
           <p className="mt-5 text-xs text-muted-foreground">Сейчас показана визуальная демо-версия. Подключение API появится после готовности OpenAPI.</p>
         </div>
