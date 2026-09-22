@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronLeft, CircleUserRound, FlaskConical, LogIn } from "lucide-react";
+import { ChevronLeft, CircleUserRound, LogIn } from "lucide-react";
 import { AnimatedTrophyIcon } from "@/components/animated-trophy-icon";
 import { AnimatedHomeIcon } from "@/components/animated-home-icon";
+import { AnimatedPlusIcon } from "@/components/animated-plus-icon";
 import { AnimatedFolderGitIcon } from "@/components/animated-folder-git-icon";
 import { useEffect, useState } from "react";
 import { AnimatedChartIcon, AnimatedMenuIcon, AnimatedSettingsIcon } from "@/components/animated-navigation-icons";
@@ -13,11 +14,11 @@ import { useDemoAccount } from "@/lib/demo-auth";
 
 const navigation = [
   { label: "Главная", href: "/", icon: AnimatedHomeIcon },
-  { label: "Топ-100", href: "/ranking", icon: AnimatedTrophyIcon },
+  { label: "Проверить репозиторий", href: "/check-repository", icon: AnimatedPlusIcon },
   { label: "Мои репозитории", href: "/my-repositories", icon: AnimatedFolderGitIcon },
   { label: "Обзор репозитория", href: "/repositories/checkout-service", icon: AnimatedChartIcon },
+  { label: "Топ-100", href: "/ranking", icon: AnimatedTrophyIcon },
   { label: "Настройки", href: "/settings", icon: AnimatedSettingsIcon },
-  { label: "Test", href: "/test", icon: FlaskConical },
 ];
 
 export function SiteHeader() {
@@ -26,7 +27,6 @@ export function SiteHeader() {
   const [collapsed, setCollapsed] = useState(false);
   const { status, setStatus } = useDemoAccount();
   const registered = status === "registered";
-  const isTestPage = pathname.startsWith("/test");
 
   useEffect(() => {
     const frame = requestAnimationFrame(() => {
@@ -63,7 +63,7 @@ export function SiteHeader() {
     <span className="app-nav-text">{registered ? "Демо: аккаунт" : "Демо: гость"}</span>
   </button>;
 
-  return <aside className="app-sidebar" data-collapsed={collapsed ? "true" : "false"} data-test-page={isTestPage ? "true" : undefined}>
+  return <aside className="app-sidebar" data-collapsed={collapsed ? "true" : "false"}>
     <svg className="app-sidebar-gradient-defs" aria-hidden="true" focusable="false">
       <defs>
         <linearGradient id="app-sidebar-blue-gradient" x1="0" y1="0" x2="0" y2="1">
@@ -89,7 +89,7 @@ export function SiteHeader() {
       {navigation.map(({ label, href, icon: Icon }) => {
         const active = href === "/" ? pathname === "/" : href.startsWith("/repositories") ? pathname.startsWith("/repositories/") : pathname.startsWith(href);
         const destination = !registered && isProtectedDemoRoute(href) ? `/register?next=${encodeURIComponent(href)}` : href;
-        return <Link className="app-nav-link" key={href} href={destination} aria-current={active ? "page" : undefined} onClick={() => setOpen(false)} title={collapsed ? label : undefined}><Icon size={17} /><span className="app-nav-text">{label}</span></Link>;
+        return <Link className={`app-nav-link${href === "/check-repository" ? " check-repository-nav-link" : ""}`} key={href} href={destination} aria-current={active ? "page" : undefined} onClick={() => setOpen(false)} title={collapsed ? label : undefined}><Icon size={17} /><span className="app-nav-text">{label}</span></Link>;
       })}
       {accountToggle(true)}
     </nav></div>

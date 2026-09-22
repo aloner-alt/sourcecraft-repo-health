@@ -8,11 +8,13 @@ export function applyPreferences() {
   const preference = readPreference("repo-health-theme", "light");
   document.documentElement.dataset.theme = preference === "dark" || (preference === "system" && matchMedia("(prefers-color-scheme: dark)").matches) ? "dark" : "light";
   document.documentElement.dataset.motion = readPreference("repo-health-motion", "on") === "off" ? "off" : "on";
+  document.documentElement.dataset.cursor = readPreference("repo-health-cursor", "on") === "off" ? "off" : "on";
 }
 export function savePreference(key: string, value: string) {
   try { localStorage.setItem(key, value); } catch { /* Preferences still apply to this session. */ }
   if (key === "repo-health-theme") document.documentElement.dataset.theme = value === "dark" || (value === "system" && matchMedia("(prefers-color-scheme: dark)").matches) ? "dark" : "light";
-  else document.documentElement.dataset.motion = value;
+  else if (key === "repo-health-motion") document.documentElement.dataset.motion = value;
+  else if (key === "repo-health-cursor") document.documentElement.dataset.cursor = value;
   window.dispatchEvent(new Event(preferenceEvent));
 }
 export function subscribePreferences(callback: () => void) {

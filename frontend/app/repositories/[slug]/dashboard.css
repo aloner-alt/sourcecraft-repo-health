@@ -1,4 +1,5 @@
 /* Dashboard tokens: the selected light blue palette and a shared spacing scale. */
+body:has(.repository-dashboard){overflow-x:clip}
 .repository-dashboard{
   --paper:#f5f7fa;--surface:#fff;--ink:#17212b;--muted:#64748b;
   --line:#dfe5ed;--dashboard-accent:#2864f0;--soft:#f0f5ff;
@@ -6,28 +7,42 @@
   min-height:100vh;background:var(--paper);color:var(--ink);
   font-family:var(--font-geist-sans),Arial,sans-serif;font-size:14px;line-height:1.6;
   font-variant-numeric:tabular-nums;
+  --repo-sidebar-offset:264px;
+  position:relative;isolation:isolate;
 }
+.app-sidebar[data-collapsed="true"]+.app-content .repository-dashboard{--repo-sidebar-offset:142px}
+.repository-dashboard::before{content:"";position:absolute;top:0;left:calc(-1 * var(--repo-sidebar-offset));width:100vw;aspect-ratio:1120/595;background:url('/repository-wave.svg') center top / 105% auto no-repeat;pointer-events:none;z-index:0;mask-image:linear-gradient(180deg,#000 0%,#000 80%,transparent 100%)}
+@media(max-width:900px){.repository-dashboard,.app-sidebar[data-collapsed="true"]+.app-content .repository-dashboard{--repo-sidebar-offset:0px}}
+.repository-dashboard .design-main{position:relative;z-index:1}
 .repository-dashboard *{box-sizing:border-box}
-:root[data-theme="dark"] .repository-dashboard{--paper:#10151e;--surface:#19212d;--ink:#e7edf5;--muted:#aab8cb;--line:#344155;--dashboard-accent:#82adff;--soft:#243249}
-:root[data-theme="dark"] .repository-dashboard :is(.repo-actions>a,.mobile-primary-action){color:#10151e}
-:root[data-theme="dark"] .repository-dashboard :is(.repo-actions>a,.mobile-primary-action):hover{background:#a6c4ff}
+:root[data-theme="dark"] .repository-dashboard{--paper:#1b1b1b;--surface:#222223;--ink:#f0f2f5;--muted:#b1b6c0;--line:#3a3c42;--dashboard-accent:#86afff;--soft:#263348}
+:root[data-theme="dark"] .repository-dashboard::before{background-image:url('/repository-wave-dark.svg');opacity:.52}
 :root[data-theme="dark"] .repository-dashboard .no-data-label{background:var(--soft);color:var(--muted)}
 .repository-dashboard a{color:inherit;text-decoration:none}
 .repository-dashboard :is(a,summary):focus-visible{outline:3px solid var(--dashboard-accent);outline-offset:4px;border-radius:6px}
 .repository-dashboard .design-main{display:grid;grid-template-columns:280px minmax(0,1fr);gap:var(--space-lg);max-width:1400px;padding:36px;margin:auto}
 .repository-dashboard .repo-header{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;gap:24px;padding-bottom:24px;border-bottom:1px solid var(--line)}
 .repository-dashboard .eyebrow{font-size:13px;font-weight:500;color:var(--muted);margin:0 0 12px;letter-spacing:0}
+.repository-dashboard .repo-header .eyebrow,.repository-dashboard .category-section>.section-title>span{color:var(--ink)}
 .repository-dashboard .repo-header h1{font-size:clamp(28px,3vw,38px);font-weight:650;letter-spacing:-1.2px;line-height:1.2;margin:0 0 12px;overflow-wrap:anywhere}
 .repository-dashboard .repo-dot{color:var(--dashboard-accent)}
-.repository-dashboard .repo-header p:not(.eyebrow){color:var(--muted);margin:0;font-size:15px}
-.repository-dashboard .repo-meta{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:16px;font-size:13px;color:var(--muted)}
-.repository-dashboard .repo-meta span:first-child{color:var(--dashboard-accent);font-weight:500}
+.repository-dashboard .repo-header p:not(.eyebrow){color:var(--ink);margin:0;font-size:15px}
+.repository-dashboard .repo-meta{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:16px;font-size:13px;color:var(--ink)}
+.repository-dashboard .repo-meta span:first-child{color:var(--ink);font-weight:600}
 .repository-dashboard .repo-actions{display:flex;flex-direction:column;align-items:flex-end;gap:10px;flex-shrink:0}
 .repository-dashboard .repo-actions>a,.repository-dashboard .mobile-primary-action{display:flex;align-items:center;justify-content:center;gap:12px;min-height:44px;padding:11px 18px;border-radius:8px;background:var(--dashboard-accent);color:#fff;font-size:14px;font-weight:600;transition:background .15s}
 .repository-dashboard .repo-actions>a:hover,.repository-dashboard .mobile-primary-action:hover{background:#1d50ca}
+.repository-dashboard .repo-actions>a,.repository-dashboard .mobile-primary-action{background:linear-gradient(180deg,#245cdb 0%,#022e92 95%);border:1px solid rgb(2 46 146 / .4);box-shadow:0 4px 10px rgb(2 46 146 / .22);transition:filter .18s ease,box-shadow .18s ease}
+.repository-dashboard .repo-actions>a:hover,.repository-dashboard .mobile-primary-action:hover{background:linear-gradient(180deg,#245cdb 0%,#022e92 95%);filter:brightness(1.08);box-shadow:0 6px 14px rgb(2 46 146 / .28)}
+:root[data-theme="dark"] .repository-dashboard :is(.repo-actions>a,.mobile-primary-action){background:#9cc5ff;border-color:#8ab4ec;color:#182438;box-shadow:0 4px 12px rgb(0 0 0 / .22)}
+:root[data-theme="dark"] .repository-dashboard :is(.repo-actions>a,.mobile-primary-action):hover{background:#9cc5ff;border-color:#b7d5ff;filter:brightness(1.06)}
 .repository-dashboard .repo-actions>span{font-size:12px;color:var(--muted)}
 .repository-dashboard .overview-grid{display:flex;flex-direction:column;gap:16px;grid-row:3/5}
-.repository-tools{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:center;gap:12px}.repository-tools>span{font-size:13px;color:var(--muted)}
+.repository-tools{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:center;gap:12px}.repository-tools>span{font-size:13px;font-weight:500;color:var(--ink);text-shadow:0 1px 2px rgb(0 0 0 / .2)}
+.repository-dashboard .repository-tools :is(.settings-link,.report-download){min-height:44px;height:44px;padding:10px 14px;border:1px solid transparent;border-radius:8px;background:rgb(255 255 255 / .74);color:var(--ink);font-size:14px;font-weight:500;line-height:1.2;box-shadow:0 4px 12px rgb(24 32 41 / .1);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px)}
+.repository-dashboard .repository-tools :is(.settings-link,.report-download):hover{background:rgb(255 255 255 / .84);border-color:rgb(81 162 255 / .6)}
+:root[data-theme="dark"] .repository-dashboard .repository-tools :is(.settings-link,.report-download){background:rgb(34 34 35 / .78);border-color:transparent;color:var(--ink);box-shadow:0 4px 12px rgb(0 0 0 / .25)}
+:root[data-theme="dark"] .repository-dashboard .repository-tools :is(.settings-link,.report-download):hover{background:rgb(34 34 35 / .88);border-color:rgb(130 173 255 / .55)}
 .repository-dashboard .score-number strong span{font:inherit;color:inherit;letter-spacing:inherit}
 .repository-dashboard .progress{animation:ring-fill .8s ease-out both}
 .repository-dashboard :is(.category-bar,.coverage-line) i{transform-origin:left;animation:bar-fill .8s ease-out both}

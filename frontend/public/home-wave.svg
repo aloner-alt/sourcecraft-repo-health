@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 570" preserveAspectRatio="none" fill="none">
+  <defs>
+    <linearGradient id="haze" x1="0" y1="120" x2="0" y2="470" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2A8CB5"/>
+      <stop offset="1" stop-color="#3472C4"/>
+    </linearGradient>
+    <linearGradient id="depth" x1="0" y1="190" x2="0" y2="490" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#3472C4"/>
+      <stop offset="1" stop-color="#24549D"/>
+    </linearGradient>
+    <filter id="soft" x="-10%" y="-30%" width="120%" height="160%" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="17"/>
+    </filter>
+    <filter id="cutout-soft" x="-10%" y="-30%" width="120%" height="160%" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="10"/>
+    </filter>
+    <mask id="background-cutout" maskUnits="userSpaceOnUse" x="0" y="0" width="1200" height="570">
+      <rect width="1200" height="570" fill="white"/>
+      <path filter="url(#cutout-soft)" fill="black" d="M0 424C52 393 100 361 130 385L180 290L215 414L250 385L300 274L390 344L470 288L510 418L540 398L582 200L610 360L640 425C690 480 750 485 790 480L840 365L890 360L930 482L960 420L1015 335L1040 485L1070 418L1140 335L1200 355V700H0V424Z"/>
+    </mask>
+  </defs>
+  <g mask="url(#background-cutout)">
+    <path filter="url(#soft)" fill="url(#haze)" d="M0 320C35 278 90 210 130 225L185 163L220 275L260 195L304 152L390 199L475 156L510 315L545 274L570 93Q595 50 620 116L640 295Q710 360 765 337L815 218Q850 175 887 230L930 393L966 280L1010 220L1038 389L1070 276L1130 212L1200 235V570H0V320Z"/>
+    <path filter="url(#soft)" fill="url(#depth)" d="M0 375C50 322 110 280 130 290L180 198L215 330L250 270L300 210L390 260L470 210L510 365L540 335L580 150L610 320L640 345C690 390 750 420 790 392L845 260L895 285L925 445L960 345L1015 255L1040 465L1075 350L1140 275L1200 280V570H0V375Z"/>
+  </g>
+</svg>
