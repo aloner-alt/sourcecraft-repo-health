@@ -190,7 +190,7 @@ export class AnalysisRunnerService {
                 status: metric.status,
                 source: metric.source,
                 explanation: metric.explanation,
-                evidence: metric.rawValue.path ? { create: [{ kind: EvidenceKind.FILE, label: metric.key, value: { path: metric.rawValue.path } }] } : undefined,
+                evidence: undefined,
               })),
             },
           },
@@ -211,7 +211,7 @@ export class AnalysisRunnerService {
               status: metric.status,
               source: metric.source,
               explanation: metric.explanation,
-              evidence: metric.rawValue.path ? { create: [{ kind: EvidenceKind.FILE, label: metric.key, value: { path: metric.rawValue.path } }] } : undefined,
+              evidence: undefined,
             })) },
           },
         }),
@@ -277,17 +277,27 @@ export class AnalysisRunnerService {
           ),
         );
       }
+      // Potential Score is recalculated from the same category aggregation.
+      // Recommendations are grouped by category and capped at that category's
+      // remaining contribution, so several fixes cannot push a category above
+      // 100 or double-count the same available weight.
+      const deltaByCategory = new Map<PrismaHealthCategory, number>();
+      for (const recommendation of recommendations) {
+        deltaByCategory.set(
+          recommendation.category,
+          (deltaByCategory.get(recommendation.category) ?? 0) +
+            recommendation.expectedScoreDelta,
+        );
+      }
+      const potentialDelta = availableCategories.reduce((total, category) => {
+        const rawDelta = deltaByCategory.get(category.category) ?? 0;
+        const currentContribution = (category.score * CATEGORY_WEIGHTS[category.category]) / health.availableWeight;
+        const maxContribution = (100 * CATEGORY_WEIGHTS[category.category]) / health.availableWeight;
+        return total + Math.min(rawDelta, Math.max(0, maxContribution - currentContribution));
+      }, 0);
       const potentialScore = Math.min(
         100,
-        Math.round(
-          (health.score +
-            recommendations.reduce(
-              (total, recommendation) =>
-                total + recommendation.expectedScoreDelta,
-              0,
-            )) *
-            100,
-        ) / 100,
+        Math.round((health.score + potentialDelta) * 100) / 100,
       );
 
       await this.analyses.complete(id, {
@@ -322,3 +332,6 @@ export class AnalysisRunnerService {
     }
   }
 }
+
+
+

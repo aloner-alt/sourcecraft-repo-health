@@ -1,16 +1,14 @@
 import { SecurityCollector } from './security.collector';
-import { RepositoryTreeProvider } from '../repository-tree.provider';
+import { DataStatus } from '@prisma/client';
 
 describe('SecurityCollector', () => {
-  const tree = { get: jest.fn() } as unknown as RepositoryTreeProvider;
-  const collector = new SecurityCollector(tree);
-
-  it('scores only verifiable repository security hygiene', async () => {
-    (tree.get as jest.Mock).mockResolvedValue([
-      { name: 'SECURITY.md', path: 'SECURITY.md', type: 'file' },
-      { name: 'package.json', path: 'package.json', type: 'file' },
-      { name: 'pnpm-lock.yaml', path: 'pnpm-lock.yaml', type: 'file' },
-    ]);
-    await expect(collector.collect('team', 'demo')).resolves.toMatchObject({ score: 85, summary: expect.stringContaining('vulnerabilities were not assessed') });
+  it('does not infer security from repository files when AppSec is unavailable', async () => {
+    await expect(new SecurityCollector().collect('team', 'demo')).resolves.toEqual({
+      score: null,
+      status: DataStatus.NO_DATA,
+      summary:
+        'AppSec SourceCraft results are unavailable; security was not scored and no vulnerability claim was made.',
+      metrics: [],
+    });
   });
 });
