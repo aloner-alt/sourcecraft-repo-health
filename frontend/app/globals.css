@@ -173,6 +173,9 @@ body {
 
 :is(a,button,input,select,summary):focus-visible{outline:3px solid var(--primary);outline-offset:3px}
 input[aria-label="Поиск репозитория"][data-pointer-focus="true"]:focus-visible{outline:none}
+#repository-url:focus-visible{outline:none;border-color:color-mix(in srgb,var(--foreground) 24%,var(--border));box-shadow:none}
+.app-content input[aria-label="Поиск репозитория"]:not([type="checkbox"]):not([type="radio"]):focus-visible{outline:none;border-color:transparent;box-shadow:none}
+label:has(> input[aria-label="Поиск репозитория"]:focus-visible){border-color:color-mix(in srgb,var(--foreground) 24%,var(--border))}
 .skip-link{position:fixed;top:12px;left:12px;z-index:100;background:var(--card);color:var(--primary);border:1px solid var(--border);padding:12px 16px;border-radius:8px;transform:translateY(-160%)}
 .skip-link:focus{transform:translateY(0)}
 .mobile-menu-button{min-width:44px;min-height:44px;align-items:center;justify-content:center}

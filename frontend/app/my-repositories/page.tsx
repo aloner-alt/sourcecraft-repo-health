@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, FolderGit2 } from "lucide-react";
+import { ArrowRight, FolderGit2, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { myRepositoriesPreview } from "@/lib/dashboard-preview";
@@ -21,6 +21,11 @@ export default function MyRepositoriesPage() {
         <Button variant="outline" render={<Link href={`/repositories/${repository.slug}`} />}>Dashboard</Button>
         <Button render={<Link href={`/analyses/${repository.slug}-demo`} />}>Демо-анализ <ArrowRight aria-hidden="true" className="size-4" /></Button>
       </div>
-    </li>)}</ul>
+    </li>)}
+      <li><Link href="/check-repository" className="flex min-h-[112px] flex-col items-center justify-center gap-2 rounded-xl border border-border bg-card px-5 py-3 text-center transition-colors hover:border-primary/60 hover:bg-accent/40">
+        <Plus aria-hidden="true" className="size-6 text-primary" />
+        <span className="font-semibold">Добавить новый репозиторий</span>
+      </Link></li>
+    </ul>
   </main>;
 }

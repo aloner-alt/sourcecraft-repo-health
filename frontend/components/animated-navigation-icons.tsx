@@ -23,10 +23,11 @@ export function AnimatedMenuIcon({ open }: { open: boolean }) {
   const reducedMotion = useReducedMotion();
   const motionEnabled = useSyncExternalStore(subscribePreferences, () => readPreference("repo-health-motion", "on") !== "off", () => true);
   const instant = reducedMotion || !motionEnabled;
+  const active = open;
   const transition = instant ? { duration: 0 } : { type: "spring" as const, stiffness: 200, damping: 20 };
   return <svg {...svgProps} width={24} height={24}>
-    <motion.line x1={4} y1={6} x2={20} y2={6} initial={false} animate={open ? { rotate: -45, x: -2.35, y: 0.35 } : { rotate: 0, x: 0, y: 0 }} style={{ transformOrigin: "top right" }} transition={transition} />
-    <motion.line x1={4} y1={12} x2={20} y2={12} initial={false} animate={{ opacity: open ? 0 : 1 }} transition={{ duration: instant ? 0 : 0.2, ease: "easeInOut" }} />
-    <motion.line x1={4} y1={18} x2={20} y2={18} initial={false} animate={open ? { rotate: 45, x: -2.35, y: -0.35 } : { rotate: 0, x: 0, y: 0 }} style={{ transformOrigin: "bottom right" }} transition={transition} />
+    <motion.path initial={false} animate={{ d: active ? "M5 5L19 19" : "M4 6L20 6" }} transition={transition} />
+    <motion.line x1={4} y1={12} x2={20} y2={12} initial={false} animate={{ opacity: active ? 0 : 1 }} transition={{ duration: instant ? 0 : 0.2, ease: "easeInOut" }} />
+    <motion.path initial={false} animate={{ d: active ? "M19 5L5 19" : "M4 18L20 18" }} transition={transition} />
   </svg>;
 }
