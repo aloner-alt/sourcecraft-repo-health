@@ -10,7 +10,7 @@ const CHECKS = [
 ] as const;
 
 export type CodeHealthCollectionResult = {
-  score: number;
+  score: number | null;
   status: DataStatus;
   summary: string;
   metrics: Array<{ key: string; rawValue: { present: boolean; path?: string }; normalizedScore: number; weight: number; status: DataStatus; source: string; explanation: string }>;

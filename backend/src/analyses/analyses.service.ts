@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -11,7 +12,7 @@ const allowedTransitions: Record<AnalysisStatus, AnalysisStatus[]> = {
   COLLECTING: [AnalysisStatus.CALCULATING, AnalysisStatus.FAILED],
   CALCULATING: [AnalysisStatus.COMPLETED, AnalysisStatus.FAILED],
   COMPLETED: [],
-  FAILED: [],
+  FAILED: [AnalysisStatus.COLLECTING],
 };
 
 type CompleteAnalysisInput = {
@@ -34,14 +35,27 @@ export class AnalysesService {
       throw new NotFoundException(`Repository ${repositoryId} was not found.`);
     }
 
+    const active = await this.prisma.analysis.findFirst({
+      where: {
+        repositoryId,
+        status: { in: [AnalysisStatus.QUEUED, AnalysisStatus.COLLECTING, AnalysisStatus.CALCULATING] },
+      },
+      select: { id: true },
+    });
+    if (active) {
+      throw new ConflictException(
+        `Repository ${repositoryId} already has an active analysis ${active.id}.`,
+      );
+    }
+
     return this.prisma.analysis.create({
       data: { repositoryId, trigger, status: AnalysisStatus.QUEUED },
     });
   }
 
   async findById(id: string) {
-    const analysis = await this.prisma.analysis.findUnique({
-      where: { id },
+    const analysis = await this.prisma.analysis.findFirst({
+      where: { id, repository: { visibility: 'PUBLIC' } },
       include: {
         repository: true,
         categories: { include: { metrics: { include: { evidence: true } } } },
@@ -56,10 +70,23 @@ export class AnalysesService {
     return analysis;
   }
 
-  markCollecting(id: string) {
-    return this.transition(id, AnalysisStatus.COLLECTING, {
-      startedAt: new Date(),
-    });
+  async markCollecting(id: string) {
+    await this.requireTransition(id, AnalysisStatus.COLLECTING);
+    const [, , analysis] = await this.prisma.$transaction([
+      this.prisma.recommendation.deleteMany({ where: { analysisId: id } }),
+      this.prisma.categoryResult.deleteMany({ where: { analysisId: id } }),
+      this.prisma.analysis.update({
+        where: { id },
+        data: {
+          status: AnalysisStatus.COLLECTING,
+          startedAt: new Date(),
+          completedAt: null,
+          errorCode: null,
+          errorMessage: null,
+        },
+      }),
+    ]);
+    return analysis;
   }
 
   markCalculating(id: string) {

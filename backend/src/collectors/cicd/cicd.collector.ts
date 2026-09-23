@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadGatewayException, Injectable } from '@nestjs/common';
 import { DataStatus } from '@prisma/client';
 import { SourceCraftClient } from '../../sourcecraft/sourcecraft.client';
 import { SourceCraftCiRun } from '../../sourcecraft/sourcecraft.types';
@@ -11,7 +11,21 @@ export class CiCdCollector {
   constructor(private readonly sourceCraft: SourceCraftClient) {}
 
   async collect(org: string, repo: string, now = new Date()): Promise<CiCdCollectionResult> {
-    const runs = await this.loadRuns(org, repo);
+    let runs: SourceCraftCiRun[];
+    try {
+      runs = await this.loadRuns(org, repo);
+    } catch (error) {
+      if (this.isPermissionDenied(error)) {
+        return {
+          score: null,
+          status: DataStatus.PERMISSION_DENIED,
+          summary:
+            'SourceCraft did not grant access to this repository’s CI/CD runs.',
+          metrics: [],
+        };
+      }
+      throw error;
+    }
     if (runs.length === 0) {
       return { score: null, status: DataStatus.NO_DATA, summary: 'No CI/CD runs were returned by SourceCraft.', metrics: [] };
     }
@@ -53,4 +67,15 @@ export class CiCdCollector {
   }
 
   private round(value: number): number { return Math.round(value * 100) / 100; }
+
+  private isPermissionDenied(error: unknown): boolean {
+    if (!(error instanceof BadGatewayException)) return false;
+    const response = error.getResponse();
+    return (
+      typeof response === 'object' &&
+      response !== null &&
+      'sourceStatus' in response &&
+      response.sourceStatus === 403
+    );
+  }
 }

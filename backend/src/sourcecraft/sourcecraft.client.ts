@@ -52,7 +52,7 @@ export class SourceCraftClient {
     return this.request(
       `/repos/${encodeURIComponent(organizationSlug)}/${encodeURIComponent(repositorySlug)}/trees`,
       {
-        page_size: String(query.pageSize ?? 1_000),
+        page_size: String(query.pageSize ?? 500),
         recursive: String(query.recursive ?? true),
         ...(query.pageToken ? { page_token: query.pageToken } : {}),
         ...(query.path ? { path: query.path } : {}),
@@ -114,7 +114,7 @@ export class SourceCraftClient {
 
       if (!response.ok) {
         throw new BadGatewayException({
-          message: 'SourceCraft API request failed.',
+          message: `SourceCraft API request failed with status ${response.status} for ${path}.`,
           sourceStatus: response.status,
           path,
         });

@@ -7,6 +7,11 @@ import { HealthScoreResult } from './scoring.types';
 export class ScoringService {
   calculate(inputs: CategoryScoreInputDto[]): HealthScoreResult {
     this.assertUniqueCategories(inputs);
+    for (const input of inputs) {
+      if (input.score !== null && (!Number.isFinite(input.score) || input.score < 0 || input.score > 100)) {
+        throw new BadRequestException('Category scores must be within 0..100.');
+      }
+    }
 
     const inputByCategory = new Map(
       inputs.map((input) => [input.category, input.score]),
@@ -62,3 +67,4 @@ export class ScoringService {
     return Math.round(value * 100) / 100;
   }
 }
+

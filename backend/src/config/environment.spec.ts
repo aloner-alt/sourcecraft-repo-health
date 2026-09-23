@@ -19,7 +19,7 @@ describe('validateEnvironment', () => {
         PORT: 3100,
         REDIS_HOST: 'localhost',
         REDIS_PORT: 6380,
-        FRONTEND_URL: 'http://localhost:5173',
+        FRONTEND_URL: 'http://localhost:3001',
         SOURCECRAFT_API_BASE_URL: 'https://api.sourcecraft.tech',
       }),
     );

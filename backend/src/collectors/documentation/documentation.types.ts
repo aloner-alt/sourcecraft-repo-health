@@ -14,7 +14,9 @@ export type DocumentationMetric = {
 };
 
 export type DocumentationCollectionResult = {
-  score: number;
+  score: number | null;
+  status: DataStatus;
   summary: string;
   metrics: DocumentationMetric[];
 };
+import { DataStatus } from '@prisma/client';

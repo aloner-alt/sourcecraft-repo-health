@@ -29,7 +29,7 @@ export class RepositoryTreeProvider {
     let token: string | undefined;
     for (let page = 0; page < 100; page += 1) {
       const result = await this.sourceCraft.listRepositoryTree(org, repo, {
-        pageSize: 1_000,
+        pageSize: 500,
         pageToken: token,
         recursive: true,
       });

@@ -35,6 +35,9 @@ services:
     environment:
       DATABASE_URL: postgresql://repo_health:repo_health@postgres:5432/repo_health?schema=public
       REDIS_HOST: redis
+      FRONTEND_URL: http://localhost:3001
+      SCHEDULE_ENABLED: "true"
+      ANALYSIS_INTERVAL_HOURS: "24"
     command: ["sh", "-c", "pnpm prisma:deploy && pnpm start:prod"]
     ports:
       - "3000:3000"
@@ -43,6 +46,20 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        API_BASE_URL: http://backend:3000/api
+        NEXT_PUBLIC_API_BASE_URL: http://localhost:3000/api
+    environment:
+      API_BASE_URL: http://backend:3000/api
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:3000/api
+    ports:
+      - "3001:3001"
+    depends_on:
+      - backend
 
 volumes:
   postgres_data:

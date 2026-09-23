@@ -1,11 +1,11 @@
 import { AnalysisStatus, AnalysisTrigger } from '@prisma/client';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import { AnalysesService } from './analyses.service';
 
 describe('AnalysesService', () => {
   const repository = { findUnique: jest.fn(), update: jest.fn() };
-  const analysis = { create: jest.fn(), findUnique: jest.fn(), update: jest.fn() };
+  const analysis = { create: jest.fn(), findFirst: jest.fn(), findUnique: jest.fn(), update: jest.fn() };
   const prisma = {
     repository,
     analysis,
@@ -13,7 +13,10 @@ describe('AnalysesService', () => {
   } as unknown as PrismaService;
   const service = new AnalysesService(prisma);
 
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => {
+    jest.clearAllMocks();
+    analysis.findFirst.mockResolvedValue(null);
+  });
 
   it('creates a queued analysis for an existing repository', async () => {
     repository.findUnique.mockResolvedValue({ id: 'repo-1' });
@@ -29,6 +32,14 @@ describe('AnalysesService', () => {
 
     await expect(service.start('missing', AnalysisTrigger.MANUAL)).rejects.toBeInstanceOf(
       NotFoundException,
+    );
+  });
+
+  it('rejects a duplicate active analysis', async () => {
+    repository.findUnique.mockResolvedValue({ id: 'repo-1' });
+    analysis.findFirst.mockResolvedValue({ id: 'active-1' });
+    await expect(service.start('repo-1', AnalysisTrigger.MANUAL)).rejects.toBeInstanceOf(
+      ConflictException,
     );
   });
 

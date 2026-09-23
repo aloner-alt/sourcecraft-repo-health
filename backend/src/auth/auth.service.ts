@@ -7,12 +7,14 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { SessionUser, YandexProfile } from './auth.types';
+import { PrismaService } from '../database/prisma.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly config: ConfigService,
     private readonly jwt: JwtService,
+    private readonly prisma: PrismaService,
   ) {}
 
   getLoginUrl(state: string): string {
@@ -30,7 +32,22 @@ export class AuthService {
   }> {
     const accessToken = await this.exchangeCode(code);
     const profile = await this.getProfile(accessToken);
+    const storedUser = await this.prisma.user.upsert({
+      where: { yandexId: profile.id },
+      create: {
+        yandexId: profile.id,
+        login: profile.login,
+        email: profile.default_email ?? null,
+        name: profile.display_name ?? profile.real_name ?? null,
+      },
+      update: {
+        login: profile.login,
+        email: profile.default_email ?? null,
+        name: profile.display_name ?? profile.real_name ?? null,
+      },
+    });
     const user: SessionUser = {
+      id: storedUser.id,
       sub: profile.id,
       login: profile.login,
       ...(profile.default_email ? { email: profile.default_email } : {}),

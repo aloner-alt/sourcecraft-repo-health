@@ -1,4 +1,5 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import {
   AnalysisStatus,
   Prisma,
@@ -33,16 +34,88 @@ export class RepositoriesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly sourceCraft: SourceCraftClient,
+    private readonly config: ConfigService,
   ) {}
 
   async syncFromSourceCraft(
     organizationSlug: string,
     repositorySlug: string,
+    userId: string,
   ) {
     const source = await this.sourceCraft.getRepository(
       organizationSlug,
       repositorySlug,
     );
+    if (source.visibility !== 'public') {
+      throw new ForbiddenException(
+        'Private and internal repositories require a verified SourceCraft account link. This deployment accepts public repositories only.',
+      );
+    }
+    const repository = await this.upsertSourceRepository(source);
+    await this.prisma.repositoryAccess.upsert({
+      where: { userId_repositoryId: { userId, repositoryId: repository.id } },
+      create: { userId, repositoryId: repository.id },
+      update: {},
+    });
+    return repository;
+  }
+
+  async syncConfiguredCatalog(): Promise<{ organizations: number; repositories: number }> {
+    const organizations = (this.config.get<string>('SOURCECRAFT_ORGANIZATIONS') ?? '')
+      .split(',')
+      .map((value) => value.trim())
+      .filter(Boolean);
+    let repositories = 0;
+    for (const organization of organizations) {
+      let pageToken: string | undefined;
+      for (let page = 0; page < 100; page += 1) {
+        const result = await this.sourceCraft.listOrganizationRepositories(
+          organization,
+          100,
+          pageToken,
+        );
+        for (const source of result.repositories.filter(
+          (item) => item.visibility === 'public',
+        )) {
+          await this.upsertSourceRepository(source);
+          repositories += 1;
+        }
+        pageToken = result.next_page_token;
+        if (!pageToken) break;
+      }
+    }
+    return { organizations: organizations.length, repositories };
+  }
+
+  async findMine(userId: string) {
+    return this.prisma.repository.findMany({
+      where: { accesses: { some: { userId } } },
+      select: repositoryListSelect,
+      orderBy: [{ lastAnalyzedAt: 'desc' }, { name: 'asc' }],
+    });
+  }
+
+  async publicRepositoryIds(): Promise<string[]> {
+    const repositories = await this.prisma.repository.findMany({
+      where: { visibility: RepositoryVisibility.PUBLIC },
+      select: { id: true },
+    });
+    return repositories.map((repository) => repository.id);
+  }
+
+  async assertCanAnalyze(userId: string, repositoryId: string): Promise<void> {
+    const access = await this.prisma.repositoryAccess.findUnique({
+      where: { userId_repositoryId: { userId, repositoryId } },
+      select: { id: true },
+    });
+    if (!access) {
+      throw new ForbiddenException(
+        'Import this repository into your workspace before starting an analysis.',
+      );
+    }
+  }
+
+  private async upsertSourceRepository(source: Awaited<ReturnType<SourceCraftClient['getRepository']>>) {
     const visibility = this.mapVisibility(source.visibility);
     const data = {
       ownerSlug: source.organization.slug,
@@ -102,7 +175,7 @@ export class RepositoriesService {
 
   async findById(id: string) {
     const repository = await this.prisma.repository.findUnique({
-      where: { id },
+      where: { id, visibility: RepositoryVisibility.PUBLIC },
       include: {
         analyses: {
           orderBy: { createdAt: 'desc' },
@@ -220,7 +293,7 @@ export class RepositoriesService {
 
   private async requireRepository(id: string): Promise<void> {
     const repository = await this.prisma.repository.findUnique({
-      where: { id },
+      where: { id, visibility: RepositoryVisibility.PUBLIC },
       select: { id: true },
     });
     if (!repository) {

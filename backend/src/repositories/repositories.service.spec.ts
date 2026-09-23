@@ -1,4 +1,4 @@
-import { NotFoundException } from '@nestjs/common';
+import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import {
   RepositorySortBy,
@@ -6,6 +6,7 @@ import {
 } from './dto/list-repositories-query.dto';
 import { RepositoriesService } from './repositories.service';
 import { SourceCraftClient } from '../sourcecraft/sourcecraft.client';
+import { ConfigService } from '@nestjs/config';
 
 describe('RepositoriesService', () => {
   const repository = {
@@ -18,8 +19,10 @@ describe('RepositoriesService', () => {
     findFirst: jest.fn(),
     findMany: jest.fn(),
   };
+  const repositoryAccess = { upsert: jest.fn(), findUnique: jest.fn() };
   const prisma = {
     repository,
+    repositoryAccess,
     analysis,
     $transaction: jest.fn((operations: Promise<unknown>[]) =>
       Promise.all(operations),
@@ -28,7 +31,8 @@ describe('RepositoriesService', () => {
   const sourceCraft = {
     getRepository: jest.fn(),
   } as unknown as SourceCraftClient;
-  const service = new RepositoriesService(prisma, sourceCraft);
+  const config = { get: jest.fn().mockReturnValue('') } as unknown as ConfigService;
+  const service = new RepositoriesService(prisma, sourceCraft, config);
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -78,7 +82,7 @@ describe('RepositoriesService', () => {
     });
     repository.upsert.mockResolvedValue({ id: 'repo-1', sourcecraftId: 'source-1' });
 
-    const result = await service.syncFromSourceCraft('team', 'demo');
+    const result = await service.syncFromSourceCraft('team', 'demo', 'user-1');
 
     expect(result.sourcecraftId).toBe('source-1');
     expect(repository.upsert).toHaveBeenCalledWith(
@@ -88,6 +92,31 @@ describe('RepositoriesService', () => {
           sourcecraftId: 'source-1',
         }),
       }),
+    );
+    expect(repositoryAccess.upsert).toHaveBeenCalled();
+  });
+
+  it('rejects private repositories without a verified SourceCraft account link', async () => {
+    (sourceCraft.getRepository as jest.Mock).mockResolvedValue({
+      id: 'private-1',
+      name: 'Private',
+      slug: 'private',
+      default_branch: 'main',
+      organization: { id: 'org-1', slug: 'team' },
+      visibility: 'private',
+      web_url: 'https://sourcecraft.dev/team/private',
+    });
+
+    await expect(
+      service.syncFromSourceCraft('team', 'private', 'user-1'),
+    ).rejects.toBeInstanceOf(ForbiddenException);
+    expect(repository.upsert).not.toHaveBeenCalled();
+  });
+
+  it('requires workspace access before a manual analysis', async () => {
+    repositoryAccess.findUnique.mockResolvedValue(null);
+    await expect(service.assertCanAnalyze('user-1', 'repo-1')).rejects.toBeInstanceOf(
+      ForbiddenException,
     );
   });
 

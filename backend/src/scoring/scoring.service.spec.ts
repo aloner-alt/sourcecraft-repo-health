@@ -51,3 +51,4 @@ describe('ScoringService', () => {
     ).toThrow(BadRequestException);
   });
 });
+

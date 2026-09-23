@@ -60,13 +60,14 @@ before starting the backend.
    {"trigger":"MANUAL"}
    ```
 
-   The response contains the analysis ID and BullMQ job ID. A Redis worker runs
-   all collectors asynchronously.
+The response contains the analysis ID and BullMQ job ID. A Redis worker runs
+all collectors asynchronously. Jobs use three attempts with exponential
+backoff. A temporary failure in one collector is stored as `COLLECTION_ERROR`
+for that category instead of discarding the other results.
 
 3. For local debugging only, run a queued analysis synchronously:
 
    ```http
-   POST /api/analyses/:analysisId/run
    ```
 
 4. Read the score, metrics, and evidence:
@@ -75,6 +76,15 @@ before starting the backend.
    GET /api/analyses/:analysisId
    ```
 
+For a complete local sync-and-analyze smoke test without a browser session:
+
+```bash
+pnpm analyze:repo <organization> <repository>
+```
+
+The command uses the configured SourceCraft token, queues the analysis through
+BullMQ, waits up to five minutes, and prints a secret-free result summary.
+
 ## Frontend API
 
 - `GET /api/repositories/:id` — dashboard repository and latest analysis
@@ -82,6 +92,7 @@ before starting the backend.
 - `GET /api/repositories/:id/metrics` — detailed metrics and evidence
 - `GET /api/repositories/:id/recommendations` — prioritized improvement actions
 - `GET /api/repositories/:id/history?limit=30` — chronological score history
+- `GET /api/repositories/:id/badge.svg` — public README health badge
 - `GET /api/ranking` — public ranking with the same filters as repositories
 - `GET /api/analyses/:id/reports/report.md` — downloadable Markdown report
 - `GET /api/analyses/:id/reports/report.pdf` — downloadable PDF report
@@ -100,6 +111,19 @@ Register a Yandex OAuth application and set `YANDEX_CLIENT_ID`,
 OAuth state is compared in constant time. Repository synchronization and
 analysis mutations require the session cookie; reports, dashboards, and ranking
 remain public.
+
+The first import adds a public repository to the current user's workspace.
+Only workspace members can start its manual analysis. Private/internal imports
+are rejected until the deployment has a verifiable per-user SourceCraft account
+link; the service PAT is never treated as proof of a user's access.
+
+## Periodic analysis
+
+`SOURCECRAFT_ORGANIZATIONS` is a comma-separated discovery scope. At startup,
+BullMQ registers a repeatable sweep controlled by `SCHEDULE_ENABLED` and
+`ANALYSIS_INTERVAL_HOURS`. Each sweep refreshes public repositories from the
+configured organizations and queues repositories that do not already have an
+active analysis.
 
 The documentation collector checks the repository tree for README, license,
 contributing guide, and CODEOWNERS files. The issues collector measures the

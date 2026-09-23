@@ -1,10 +1,12 @@
 import { Job } from 'bullmq';
 import { AnalysisRunnerService } from './analysis-runner.service';
 import { AnalysisProcessor } from './analysis.processor';
+import { AnalysisQueueService } from './analysis-queue.service';
 
 describe('AnalysisProcessor', () => {
   const runner = { run: jest.fn() } as unknown as AnalysisRunnerService;
-  const processor = new AnalysisProcessor(runner);
+  const queue = { runScheduledSweep: jest.fn() } as unknown as AnalysisQueueService;
+  const processor = new AnalysisProcessor(runner, queue);
 
   it('runs the queued analysis', async () => {
     await processor.process({
@@ -21,5 +23,13 @@ describe('AnalysisProcessor', () => {
         analysisId: string;
       }>),
     ).rejects.toThrow('Unsupported analysis job');
+  });
+
+  it('runs the periodic repository sweep', async () => {
+    await processor.process({
+      name: 'scheduled-analysis-sweep',
+      data: {},
+    } as Job<{ analysisId: string }>);
+    expect(queue.runScheduledSweep).toHaveBeenCalled();
   });
 });

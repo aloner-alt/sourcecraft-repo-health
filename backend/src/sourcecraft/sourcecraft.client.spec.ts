@@ -47,6 +47,16 @@ describe('SourceCraftClient', () => {
     );
   });
 
+  it('includes the safe path and upstream status in request errors', async () => {
+    jest
+      .spyOn(global, 'fetch')
+      .mockResolvedValue(new Response(null, { status: 403 }));
+
+    await expect(client.listRepositoryCiRuns('team', 'demo')).rejects.toThrow(
+      'SourceCraft API request failed with status 403 for /repos/team/demo/cicd/runs.',
+    );
+  });
+
   it('lists a repository tree recursively', async () => {
     const fetchMock = jest.spyOn(global, 'fetch').mockResolvedValue(
       new Response(JSON.stringify({ trees: [], next_page_token: 'next' }), {

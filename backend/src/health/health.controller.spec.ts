@@ -42,7 +42,7 @@ describe('HealthController', () => {
     expect(controller.getConfigStatus()).toEqual({
       sourceCraftTokenConfigured: true,
       yandexAuthConfigured: true,
-      frontendUrl: 'http://localhost:5173',
+      frontendUrl: 'http://localhost:3001',
     });
     expect(JSON.stringify(controller.getConfigStatus())).not.toContain(
       'sourcecraft-token',

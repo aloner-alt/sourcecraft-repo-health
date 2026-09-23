@@ -17,5 +17,11 @@ describe('RepositoryTreeProvider', () => {
     expect(first).toEqual(second);
     expect(first).toHaveLength(2);
     expect(sourceCraft.listRepositoryTree).toHaveBeenCalledTimes(2);
+    expect(sourceCraft.listRepositoryTree).toHaveBeenNthCalledWith(
+      1,
+      'team',
+      'demo',
+      { pageSize: 500, pageToken: undefined, recursive: true },
+    );
   });
 });
