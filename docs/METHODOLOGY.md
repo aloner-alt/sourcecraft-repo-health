@@ -107,3 +107,7 @@ Stale issue — открытый issue без обновления более 30
 При наличии прав SourceCraft API запрашиваются `GET /repos/{org}/{repo}/pulls` и `GET /repos/{org}/{repo}/releases` с пагинацией (до 100 страниц). В окно 90 дней попадают PR по `created_at`/`updated_at`, в окно 180 дней — опубликованные releases по `released_at`. Веса внутри Activity: recency 60%, PR 25%, releases 15%; нормализация PR — `min(100, count_90d * 10)`, releases — `min(100, published_count_180d * 25)`. Ошибка или отсутствие endpoint не превращается в ноль: доступные сигналы сохраняются, а отсутствие всех сигналов даёт `NO_DATA`. Commit frequency, contributors и code churn остаются `NO_DATA`, пока их форма ответа не зафиксирована.
 
 Официальная документация подтверждает REST endpoints pull requests и releases: https://sourcecraft.dev/portal/docs/en/api-ref/Repository-or-PullRequest/ListRepositoryPullRequests и https://sourcecraft.dev/portal/docs/en/api-ref/Repository-or-Releases/GetLatest.
+
+### Security AppSec adapter
+
+Security может быть включена только явной конфигурацией `SOURCECRAFT_APPSEC_ENDPOINT`, указывающей на подтверждённый SourceCraft AppSec endpoint. Ответ принимается только при наличии массива `findings`; 401/403 дают `PERMISSION_DENIED`, сетевые/форматные ошибки — `COLLECTION_ERROR`. Для unresolved findings применяются фиксированные penalties: critical 40, high 20, medium 8, low 2. При отсутствии endpoint остаётся `NO_DATA`. Самостоятельный SAST/SCA/secret scanning не выполняется.

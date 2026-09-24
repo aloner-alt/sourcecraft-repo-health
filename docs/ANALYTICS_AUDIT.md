@@ -22,3 +22,5 @@
 - Реальный AppSec ответ SourceCraft (SAST/SCA/secret scanning, severity, remediation) и архив `sourcecraft-repo-health-security.zip` не доступны в рабочей среде.
 - OAuth callback, Postgres/Redis, Docker Compose и первичный/повторный live analysis требуют секретов и Docker runtime.
 - Commit frequency, contributors, raw README quality/launch instructions, TODO/FIXME и test coverage не извлекаются без подтверждённых API/CLI форм.
+
+Security adapter теперь принимает только явно настроенный `SOURCECRAFT_APPSEC_ENDPOINT` с валидированным массивом `findings`; без него сохраняется `NO_DATA`. Живой официальный endpoint и форма ответа всё ещё требуют проверки владельцем SourceCraft.
