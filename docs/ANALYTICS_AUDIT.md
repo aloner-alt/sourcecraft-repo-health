@@ -1,31 +1,24 @@
-# Аналитический аудит реализации
+# Analytics audit — fix/analytics-tz-v2
 
-Дата аудита: 2026-09-23
+## Реализовано в коде
 
-## Исправлено
+- Новая ветка создана от `origin/main`; API, OAuth, отчёты и Docker-файлы main сохранены.
+- Перенесены только UI-изменения frontend без demo-данных в рабочих экранах.
+- Методология v2: шесть категорий, веса 20/15/15/15/15/20, score 0..100, перенормировка доступных весов, Data Coverage, NO_DATA/PERMISSION_DENIED/COLLECTION_ERROR.
+- Potential Score пересчитывается теми же формулами и ограничен оставшимся вкладом каждой категории.
+- Security не выполняет самописный анализ: без подтверждённого AppSec findings результат NO_DATA.
+- Activity использует подтверждённые REST endpoints `/pulls` и `/releases`, если они доступны; recency, PR и releases имеют явные окна и веса. Commit frequency/contributors остаются NO_DATA до подтверждения формы API.
+- Аналитика и UI получают категории, метрики, evidence, статус источника, Data Coverage и methodology.
 
-- Security больше не выдаёт score на основании наличия файлов и явно возвращает `NO_DATA` без AppSec.
-- Исправлен дублирующий импорт `DataStatus` в issue types.
-- Potential Score ограничивается оставшимся вкладом категории и не складывает приросты сверх 100.
-- Методология обновлена до v2 и отделяет реализованные сигналы от внешних зависимостей.
+## Проверено в работающем приложении
 
-## Внешние зависимости
+- Сравнение `origin/main` и `origin/frontend` выполнено; защищённые main-файлы не заменены demo-экранами.
+- SourceCraft API без PAT вернул 401 на публичном запросе; это подтверждает, что приложение не подставляет синтетический security результат.
+- Unit/build в этой копии требуют полного pnpm store; установка пакетов заблокирована политикой EACCES, поэтому локальный запуск тестов в данной среде не завершён.
+- Docker CLI отсутствует, Compose и live-анализ реального репозитория здесь не запускались.
 
-| Блок | Причина | Поведение |
-|---|---|---|
-| AppSec/SAST/SCA | endpoint не подтверждён в используемом API | Security = `NO_DATA` |
-| Git history | collector получает только `last_updated` | Activity ограничена recency |
-| Raw file content | tree не содержит содержимое файлов | README/TODO content не оценивается |
-| Issue tracker availability | API не возвращает отдельный флаг | пустой ответ = `NO_DATA` |
+## Осталось неподтверждённым/недоступным
 
-## Definition of Done для аналитики
-
-- [x] Шесть категорий и веса.
-- [x] Перенормировка доступных категорий.
-- [x] Разделение `NO_DATA`, permission и collection error.
-- [x] Реальные evidence для реализованных collectors.
-- [x] Potential Score с ограничением категории.
-- [ ] Реальные AppSec findings.
-- [ ] Полная проверка на репозиториях SourceCraft.
-- [ ] Git activity, contributors, MR и releases.
-- [ ] Числовой regression-набор из 15 контрольных сценариев.
+- Реальный AppSec ответ SourceCraft (SAST/SCA/secret scanning, severity, remediation) и архив `sourcecraft-repo-health-security.zip` не доступны в рабочей среде.
+- OAuth callback, Postgres/Redis, Docker Compose и первичный/повторный live analysis требуют секретов и Docker runtime.
+- Commit frequency, contributors, raw README quality/launch instructions, TODO/FIXME и test coverage не извлекаются без подтверждённых API/CLI форм.

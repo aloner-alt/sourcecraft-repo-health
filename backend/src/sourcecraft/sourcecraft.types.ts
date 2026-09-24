@@ -108,3 +108,30 @@ export type SourceCraftCiRunPage = {
   runs: SourceCraftCiRun[];
   next_page_token?: string;
 };
+
+export type SourceCraftPullRequest = {
+  id: string;
+  status?: 'draft' | 'open' | 'discarded' | 'merging' | 'merged';
+  created_at?: string;
+  updated_at?: string;
+  merged_at?: string;
+};
+
+export type SourceCraftPullRequestPage = {
+  pull_requests?: SourceCraftPullRequest[];
+  pulls?: SourceCraftPullRequest[];
+  next_page_token?: string;
+};
+
+export type SourceCraftRelease = {
+  id: string;
+  status?: 'draft' | 'published' | 'discarded';
+  released_at?: string;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type SourceCraftReleasePage = {
+  releases?: SourceCraftRelease[];
+  next_page_token?: string;
+};

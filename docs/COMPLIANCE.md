@@ -25,3 +25,7 @@
 `/api/health/ready`, публичные страницы, скачивание отчётов и OAuth callback.
 Пошаговый сценарий находится в [DEMO.md](DEMO.md).
 
+
+## AppSec и подтверждение источника
+
+Security не использует дерево файлов, lockfiles или самописный сканер. В текущем API-слое нет зафиксированного ответа AppSec findings, поэтому категория сохраняет `NO_DATA`; 401/403 и сетевые сбои показываются как `PERMISSION_DENIED`/`COLLECTION_ERROR`. Архив `sourcecraft-repo-health-security.zip` в рабочей среде не обнаружен и не использовался как подтверждение API.

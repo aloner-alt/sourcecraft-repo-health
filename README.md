@@ -26,3 +26,7 @@ docker compose up --build
 - Swagger: http://localhost:3000/docs
 
 Подробности: [соответствие ТЗ](docs/COMPLIANCE.md), [архитектура](docs/ARCHITECTURE.md), [методология](docs/METHODOLOGY.md), [сценарий демонстрации](docs/DEMO.md) и [настройка окружения](backend/docs/ENVIRONMENT.md).
+
+## Методология v2 и проверка
+
+Актуальная аналитика реализована в ветке `fix/analytics-tz-v2`; подробный разбор фактически реализованного и недоступного находится в [`docs/ANALYTICS_AUDIT.md`](docs/ANALYTICS_AUDIT.md). Security без подтверждённого AppSec ответа SourceCraft получает `NO_DATA`, а не нулевой или синтетический score.

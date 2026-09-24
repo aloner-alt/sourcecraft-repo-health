@@ -67,7 +67,7 @@ model Analysis {
   score           Float?
   potentialScore  Float?
   dataCoverage    Float?
-  methodology     String           @default("v1")
+  methodology     String           @default("v2")
   startedAt       DateTime?
   completedAt     DateTime?
   errorCode       String?
@@ -202,4 +202,5 @@ enum EvidenceKind {
   RELEASE
   METRIC
 }
+
 

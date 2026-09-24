@@ -12,6 +12,8 @@ import {
   SourceCraftRepositoryPage,
   SourceCraftTreePage,
   SourceCraftTreeQuery,
+  SourceCraftPullRequestPage,
+  SourceCraftReleasePage,
 } from './sourcecraft.types';
 
 @Injectable()
@@ -92,6 +94,17 @@ export class SourceCraftClient {
     );
   }
 
+  listRepositoryPullRequests(organizationSlug: string, repositorySlug: string, pageSize = 100, pageToken?: string): Promise<SourceCraftPullRequestPage> {
+    return this.request(`/repos/${encodeURIComponent(organizationSlug)}/${encodeURIComponent(repositorySlug)}/pulls`, {
+      page_size: String(pageSize), ...(pageToken ? { page_token: pageToken } : {}),
+    });
+  }
+
+  listRepositoryReleases(organizationSlug: string, repositorySlug: string, pageSize = 100, pageToken?: string): Promise<SourceCraftReleasePage> {
+    return this.request(`/repos/${encodeURIComponent(organizationSlug)}/${encodeURIComponent(repositorySlug)}/releases`, {
+      page_size: String(pageSize), ...(pageToken ? { page_token: pageToken } : {}),
+    });
+  }
   private async request<T>(
     path: string,
     query: Record<string, string> = {},
@@ -132,3 +145,4 @@ export class SourceCraftClient {
     }
   }
 }
+

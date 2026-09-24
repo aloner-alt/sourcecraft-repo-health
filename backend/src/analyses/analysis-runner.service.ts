@@ -59,9 +59,7 @@ export class AnalysisRunnerService {
           analysis.repository.slug,
         )),
       ]);
-      const activityResult = this.activity.collect(
-        analysis.repository.lastActivityAt,
-      );
+      const activityResult = await this.collectSafely('activity', this.activity.collect(\n        analysis.repository.ownerSlug,\n        analysis.repository.slug,\n        analysis.repository.lastActivityAt,\n      ));
       await this.analyses.markCalculating(id);
 
       await this.prisma.$transaction([
@@ -332,6 +330,7 @@ export class AnalysisRunnerService {
     }
   }
 }
+
 
 
 
