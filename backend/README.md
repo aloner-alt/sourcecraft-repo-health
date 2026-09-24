@@ -65,12 +65,7 @@ all collectors asynchronously. Jobs use three attempts with exponential
 backoff. A temporary failure in one collector is stored as `COLLECTION_ERROR`
 for that category instead of discarding the other results.
 
-3. For local debugging only, run a queued analysis synchronously:
-
-   ```http
-   ```
-
-4. Read the score, metrics, and evidence:
+3. Read the score, metrics, and evidence:
 
    ```http
    GET /api/analyses/:analysisId
