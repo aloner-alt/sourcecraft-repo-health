@@ -16,7 +16,7 @@ const allowedTransitions: Record<AnalysisStatus, AnalysisStatus[]> = {
 };
 
 type CompleteAnalysisInput = {
-  score: number;
+  score: number | null;
   potentialScore?: number;
   dataCoverage: number;
 };
@@ -155,3 +155,4 @@ export class AnalysesService {
     return analysis;
   }
 }
+
