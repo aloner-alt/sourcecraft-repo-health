@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { connection } from "next/server";
-import { ArrowRight, ChevronDown, Download, ExternalLink } from "lucide-react";
+import { ArrowLeft, ArrowRight, ChevronDown, Clock3, Download, ExternalLink } from "lucide-react";
 import { DashboardDetails } from "@/components/dashboard-details";
 import { Button } from "@/components/ui/button";
 import { ApiError, badgeUrl, getHealth, getHistory, getMetrics, getRecommendations, getRepository, reportUrl } from "@/lib/api";
@@ -47,16 +47,28 @@ function healthLabel(score: number): string {
 }
 
 async function loadDashboard(repositoryId: string) {
+  let repository;
   try {
-    return await Promise.all([
-      getRepository(repositoryId),
+    repository = await getRepository(repositoryId);
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) notFound();
+    throw error;
+  }
+
+  try {
+    const dashboard = await Promise.all([
       getHealth(repositoryId),
       getMetrics(repositoryId),
       getRecommendations(repositoryId),
       getHistory(repositoryId),
     ]);
+    return { repository, dashboard };
   } catch (error) {
-    if (error instanceof ApiError && error.status === 404) notFound();
+    // The repository is valid, but its first analysis may still be queued.
+    // That is a normal state and must not be presented as a missing page.
+    if (error instanceof ApiError && error.status === 404) {
+      return { repository, dashboard: null };
+    }
     throw error;
   }
 }
@@ -64,7 +76,45 @@ async function loadDashboard(repositoryId: string) {
 export default async function RepositoryPage({ params }: PageProps<"/repositories/[slug]">) {
   await connection();
   const { slug: repositoryId } = await params;
-  const [repository, health, metrics, recommendationResult, history] = await loadDashboard(repositoryId);
+  const { repository, dashboard } = await loadDashboard(repositoryId);
+
+  if (!dashboard) {
+    const latestAnalysis = repository.analyses[0];
+    const failed = latestAnalysis?.status === "FAILED";
+    const statusText = !latestAnalysis
+      ? "Анализ ещё не запускался"
+      : failed
+        ? "Анализ завершился с ошибкой"
+        : latestAnalysis.status === "QUEUED"
+          ? "Анализ поставлен в очередь"
+          : "Анализ выполняется";
+
+    return <div className="min-h-screen bg-background"><main className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-3xl items-center px-5 py-16">
+      <section className="w-full rounded-2xl border border-border bg-card p-7 shadow-sm sm:p-10">
+        <p className="text-sm font-medium text-primary">Обзор репозитория</p>
+        <h1 className="mt-2 break-words text-3xl font-bold tracking-tight sm:text-4xl">{repository.ownerSlug}/{repository.name}</h1>
+        <p className="mt-3 text-muted-foreground">{repository.description || "Описание репозитория не указано."}</p>
+        <div className="mt-8 rounded-xl border border-border bg-background/40 p-6">
+          <div className="flex items-start gap-4"><Clock3 className={`mt-0.5 size-6 shrink-0 ${failed ? "text-destructive" : "text-primary"}`} aria-hidden="true" />
+            <div><h2 className="text-xl font-semibold">{statusText}</h2>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">{failed
+                ? latestAnalysis.errorMessage || "Повторите анализ из раздела «Мои репозитории»."
+                : latestAnalysis
+                  ? "Репозиторий найден. Dashboard появится автоматически после завершения фоновой проверки."
+                  : "Добавьте репозиторий в рабочую область и запустите первую проверку."}</p>
+            </div>
+          </div>
+        </div>
+        <div className="mt-7 flex flex-wrap gap-3">
+          {latestAnalysis && <Button render={<Link href={`/analyses/${latestAnalysis.id}`} />}>Следить за анализом <ArrowRight className="size-4" /></Button>}
+          <Button variant="outline" render={<Link href="/ranking" />}><ArrowLeft className="size-4" />К рейтингу</Button>
+          <Button variant="outline" render={<a href={repository.webUrl} target="_blank" rel="noreferrer" />}>Открыть SourceCraft <ExternalLink className="size-4" /></Button>
+        </div>
+      </section>
+    </main></div>;
+  }
+
+  const [health, metrics, recommendationResult, history] = dashboard;
     const metricByCategory = new Map(metrics.categories.map(category => [category.category, category]));
     const categories: DashboardCategory[] = health.categories.map(category => {
       const metricCategory = metricByCategory.get(category.category);

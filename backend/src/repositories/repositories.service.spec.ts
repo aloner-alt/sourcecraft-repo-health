@@ -55,7 +55,10 @@ describe('RepositoriesService', () => {
     expect(result.pagination.total).toBe(1);
     expect(repository.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        orderBy: [{ latestScore: 'desc' }, { name: 'asc' }],
+        orderBy: [
+          { latestScore: { sort: 'desc', nulls: 'last' } },
+          { name: 'asc' },
+        ],
         take: 20,
       }),
     );

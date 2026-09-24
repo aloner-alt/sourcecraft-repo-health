@@ -105,6 +105,8 @@ export class AnalysisQueueService implements OnApplicationBootstrap {
           jobId: analysis.id,
           attempts: 3,
           backoff: { type: 'exponential', delay: 5_000 },
+          // User-requested analyses should not wait behind a large catalog sweep.
+          lifo: trigger !== AnalysisTrigger.SCHEDULED,
           removeOnComplete: 100,
           removeOnFail: 500,
         },

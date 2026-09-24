@@ -37,7 +37,11 @@ describe('AnalysisQueueService', () => {
     expect(queue.add).toHaveBeenCalledWith(
       'run-analysis',
       { analysisId: 'analysis-1' },
-      expect.objectContaining({ jobId: 'analysis-1', attempts: 3 }),
+      expect.objectContaining({
+        jobId: 'analysis-1',
+        attempts: 3,
+        lifo: true,
+      }),
     );
   });
 

@@ -356,7 +356,10 @@ export class RepositoriesService {
         return [{ lastActivityAt: direction }, { name: 'asc' }];
       case RepositorySortBy.SCORE:
       default:
-        return [{ latestScore: direction }, { name: 'asc' }];
+        return [
+          { latestScore: { sort: direction, nulls: 'last' } },
+          { name: 'asc' },
+        ];
     }
   }
 
