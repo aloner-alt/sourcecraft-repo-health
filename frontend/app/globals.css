@@ -223,6 +223,7 @@ html{scroll-behavior:smooth}
   .app-sidebar[data-collapsed="true"] .app-brand-full{display:none}
   .app-sidebar[data-collapsed="true"] .app-brand{width:44px;height:44px;justify-content:center;border:1px solid var(--border);border-radius:12px;background:var(--card);box-shadow:0 3px 12px rgb(15 23 42 / .08)}
   .app-sidebar[data-collapsed="true"] .app-brand-compact{display:inline-flex}
+  .app-sidebar[data-collapsed="true"] .app-sidebar-top>.flex{display:none}
   .app-sidebar[data-collapsed="true"] .app-sidebar-label{height:0;margin:18px 0 14px;overflow:hidden;opacity:0}
   .app-sidebar[data-collapsed="true"] nav{gap:16px}
   .app-sidebar[data-collapsed="true"] .app-nav-link{width:44px;height:44px;min-height:44px;justify-content:center;gap:0;padding:0;border:1px solid transparent;border-radius:12px}
