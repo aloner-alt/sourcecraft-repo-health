@@ -30,8 +30,10 @@ describe('RepositoriesService', () => {
   } as unknown as PrismaService;
   const sourceCraft = {
     getRepository: jest.fn(),
+    discoverPublicRepositories: jest.fn(),
+    listMyRepositories: jest.fn(),
   } as unknown as SourceCraftClient;
-  const config = { get: jest.fn().mockReturnValue('') } as unknown as ConfigService;
+  const config = { get: jest.fn((_key: string, fallback: unknown) => fallback) } as unknown as ConfigService;
   const service = new RepositoriesService(prisma, sourceCraft, config);
 
   beforeEach(() => {
@@ -79,6 +81,7 @@ describe('RepositoriesService', () => {
       web_url: 'https://sourcecraft.dev/team/demo',
       last_updated: '2026-09-16T10:00:00Z',
       language: { name: 'TypeScript' },
+      rating: { reaction_counts: [{ type: 'positive_low', count: '17' }] },
     });
     repository.upsert.mockResolvedValue({ id: 'repo-1', sourcecraftId: 'source-1' });
 
@@ -89,11 +92,26 @@ describe('RepositoriesService', () => {
       expect.objectContaining({
         create: expect.objectContaining({
           primaryLanguage: 'TypeScript',
+          likesCount: 17,
           sourcecraftId: 'source-1',
         }),
       }),
     );
     expect(repositoryAccess.upsert).toHaveBeenCalled();
+  });
+
+  it('synchronizes all public repositories through the discovery endpoint', async () => {
+    (sourceCraft.discoverPublicRepositories as jest.Mock).mockResolvedValue({
+      repositories: [{
+        id: 'source-1', name: 'Demo', slug: 'demo', default_branch: 'main',
+        organization: { id: 'org-1', slug: 'team' }, visibility: 'public',
+        web_url: 'https://sourcecraft.dev/team/demo',
+      }],
+    });
+    repository.upsert.mockResolvedValue({ id: 'repo-1' });
+
+    await expect(service.syncPublicCatalog()).resolves.toEqual({ organizations: 1, repositories: 1 });
+    expect(sourceCraft.discoverPublicRepositories).toHaveBeenCalledWith(100, undefined);
   });
 
   it('rejects private repositories without a verified SourceCraft account link', async () => {

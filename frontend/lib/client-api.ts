@@ -39,4 +39,5 @@ export async function clientRequest<T>(path: string, init: RequestInit = {}): Pr
 
 export const loadSession = () => clientRequest<SessionUser>("/auth/me");
 export const loadMyRepositories = () => clientRequest<RepositorySummary[]>("/repositories/mine");
+export const syncMyRepositories = () => clientRequest<{ imported: number; items: RepositorySummary[] }>("/repositories/mine/sync", { method: "POST" });
 export const loadAnalysis = (id: string) => clientRequest<Analysis>(`/analyses/${encodeURIComponent(id)}`);

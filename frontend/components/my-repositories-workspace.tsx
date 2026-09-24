@@ -3,11 +3,11 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, FolderGit2, LoaderCircle, LogIn, Play, Plus } from "lucide-react";
+import { ArrowRight, FolderGit2, LoaderCircle, LogIn, Play, Plus, RefreshCw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { Analysis, RepositorySummary } from "@/lib/api-types";
-import { clientRequest, loadMyRepositories, loadSession, publicApiBaseUrl, type SessionUser } from "@/lib/client-api";
+import { clientRequest, loadMyRepositories, loadSession, publicApiBaseUrl, syncMyRepositories, type SessionUser } from "@/lib/client-api";
 
 export function MyRepositoriesWorkspace() {
   const router = useRouter();
@@ -54,13 +54,26 @@ export function MyRepositoriesWorkspace() {
     }
   };
 
+  const refreshAvailableRepositories = async () => {
+    setSubmitting(true);
+    setError(null);
+    try {
+      const result = await syncMyRepositories();
+      setRepositories(result.items);
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Не удалось получить репозитории SourceCraft.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   if (loading) return <main className="mx-auto max-w-5xl px-5 py-16"><LoaderCircle className="animate-spin text-primary" /><p className="mt-3 text-muted-foreground">Проверяем сессию…</p></main>;
   if (!user) return <main className="mx-auto max-w-3xl px-5 py-16 text-center"><LogIn className="mx-auto size-10 text-primary" /><h1 className="mt-5 text-3xl font-semibold">Войдите через Я ID</h1><p className="mx-auto mt-3 max-w-xl text-muted-foreground">После входа вы сможете подключить публичный репозиторий SourceCraft, запустить первичный или повторный анализ и получить отчёт.</p><Button className="mt-7" size="lg" render={<a href={`${publicApiBaseUrl()}/auth/yandex/login`} />}>Войти через Яндекс</Button></main>;
 
   return <main className="mx-auto max-w-5xl px-5 py-10 lg:px-8">
     <p className="text-sm text-primary">Рабочая область {user.name ?? user.login}</p>
     <h1 className="mt-2 text-4xl font-semibold tracking-tight">Мои репозитории</h1>
-    <p className="mt-3 text-muted-foreground">Подключите публичный репозиторий SourceCraft и сразу запустите анализ.</p>
+    <div className="mt-3 flex flex-wrap items-center justify-between gap-3"><p className="text-muted-foreground">Выберите доступный вам публичный репозиторий SourceCraft или подключите его вручную.</p><Button type="button" variant="outline" disabled={submitting} onClick={refreshAvailableRepositories}>{submitting ? <LoaderCircle className="size-4 animate-spin" /> : <RefreshCw className="size-4" />}Получить из SourceCraft</Button></div>
     <form action={importAndAnalyze} className="mt-7 grid gap-3 rounded-xl border border-border bg-card p-5 sm:grid-cols-[1fr_1fr_auto]">
       <label className="text-sm font-medium">Организация<input required name="organization" placeholder="divkit" className="mt-2 min-h-11 w-full rounded-lg border border-border bg-background px-3 font-normal outline-none" /></label>
       <label className="text-sm font-medium">Репозиторий<input required name="repository" placeholder="divkit" className="mt-2 min-h-11 w-full rounded-lg border border-border bg-background px-3 font-normal outline-none" /></label>

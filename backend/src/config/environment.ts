@@ -74,19 +74,19 @@ export function validateEnvironment(input: Environment): Environment {
   parsePort(config, 'PORT', 3000);
   parsePort(config, 'REDIS_PORT', 6379);
   parsePositiveInteger(config, 'ANALYSIS_INTERVAL_HOURS', 24);
+  parsePositiveInteger(config, 'SOURCECRAFT_CATALOG_MAX_PAGES', 100);
   const scheduleEnabled = optionalString(config.SCHEDULE_ENABLED) ?? 'true';
   if (!['true', 'false'].includes(scheduleEnabled)) {
     throw new Error('SCHEDULE_ENABLED must be true or false');
   }
   config.SCHEDULE_ENABLED = scheduleEnabled;
-  config.SOURCECRAFT_ORGANIZATIONS =
-    optionalString(config.SOURCECRAFT_ORGANIZATIONS) ?? '';
   config.REDIS_HOST = optionalString(config.REDIS_HOST) ?? 'localhost';
   config.FRONTEND_URL =
     optionalString(config.FRONTEND_URL) ?? 'http://localhost:3001';
   config.SOURCECRAFT_API_BASE_URL =
     optionalString(config.SOURCECRAFT_API_BASE_URL) ??
     'https://api.sourcecraft.tech';
+  config.SOURCECRAFT_CLI_PATH = optionalString(config.SOURCECRAFT_CLI_PATH);
 
   validateUrl(config, 'DATABASE_URL', {
     required: true,

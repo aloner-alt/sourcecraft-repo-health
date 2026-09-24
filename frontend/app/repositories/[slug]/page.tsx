@@ -78,6 +78,23 @@ export default async function RepositoryPage({ params }: PageProps<"/repositorie
         reason: category.summary,
         fact: firstMetric?.source ?? "SourceCraft API",
         raw: firstMetric ? `${firstMetric.explanation} ${rawValue(firstMetric.rawValue)}` : category.summary,
+        metrics: metricCategory?.metrics.map(metric => ({
+          id: metric.id,
+          key: metric.key,
+          score: metric.normalizedScore === null ? null : Math.round(metric.normalizedScore),
+          weight: Math.round(metric.weight * 100),
+          status: statusNames[metric.status] ?? metric.status,
+          source: metric.source,
+          explanation: metric.explanation,
+          raw: rawValue(metric.rawValue),
+          evidence: metric.evidence.map(evidence => ({
+            id: evidence.id,
+            label: evidence.label,
+            kind: evidence.kind,
+            url: evidence.url,
+            value: rawValue(evidence.value),
+          })),
+        })) ?? [],
       };
     });
     const recommendations: DashboardRecommendation[] = recommendationResult.items.map(item => ({

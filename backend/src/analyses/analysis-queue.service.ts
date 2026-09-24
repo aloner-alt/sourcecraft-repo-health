@@ -61,10 +61,10 @@ export class AnalysisQueueService implements OnApplicationBootstrap {
 
   async runScheduledSweep(): Promise<{ queued: number; skipped: number }> {
     try {
-      await this.repositories.syncConfiguredCatalog();
+      await this.repositories.syncPublicCatalog();
     } catch (error) {
       this.logger.warn(
-        `Configured catalog refresh failed; continuing with known repositories: ${error instanceof Error ? error.message : 'unknown error'}`,
+        `Public catalog refresh failed; continuing with known repositories: ${error instanceof Error ? error.message : 'unknown error'}`,
       );
     }
     const repositoryIds = await this.repositories.publicRepositoryIds();

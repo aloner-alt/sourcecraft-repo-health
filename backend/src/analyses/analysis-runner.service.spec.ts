@@ -48,7 +48,7 @@ describe('AnalysisRunnerService', () => {
     (analyses.findById as jest.Mock)
       .mockResolvedValueOnce({
         id: 'analysis-1',
-        repository: { ownerSlug: 'team', slug: 'demo' },
+        repository: { sourcecraftId: 'source-1', ownerSlug: 'team', slug: 'demo', lastActivityAt: new Date() },
       })
       .mockResolvedValueOnce({ id: 'analysis-1', status: 'COMPLETED' });
     (documentation.collect as jest.Mock).mockResolvedValue({
@@ -73,7 +73,7 @@ describe('AnalysisRunnerService', () => {
       summary: '10 issues analyzed.',
       metrics: [],
     });
-    (activity.collect as jest.Mock).mockReturnValue({
+    (activity.collect as jest.Mock).mockResolvedValue({
       score: 100,
       status: 'AVAILABLE',
       summary: 'Last repository activity was 1 day ago.',
@@ -103,7 +103,7 @@ describe('AnalysisRunnerService', () => {
 
   it('keeps the analysis usable when one collection source fails', async () => {
     (analyses.findById as jest.Mock).mockResolvedValue({
-      repository: { ownerSlug: 'team', slug: 'demo' },
+      repository: { sourcecraftId: 'source-1', ownerSlug: 'team', slug: 'demo', lastActivityAt: null },
     });
     (documentation.collect as jest.Mock).mockRejectedValue(new Error('API unavailable'));
     (issues.collect as jest.Mock).mockResolvedValue({
@@ -111,7 +111,7 @@ describe('AnalysisRunnerService', () => {
       status: 'NO_DATA',
       metrics: [],
     });
-    (activity.collect as jest.Mock).mockReturnValue({
+    (activity.collect as jest.Mock).mockResolvedValue({
       score: null,
       status: 'NO_DATA',
       metrics: [],

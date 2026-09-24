@@ -42,6 +42,9 @@ export class HealthController {
       sourceCraftTokenConfigured: Boolean(
         this.config.get<string>('SOURCECRAFT_TOKEN'),
       ),
+      appSecCliConfigured: Boolean(
+        this.config.get<string>('SOURCECRAFT_CLI_PATH'),
+      ),
       yandexAuthConfigured: Boolean(
         yandexClientId && yandexClientSecret && yandexCallbackUrl,
       ),

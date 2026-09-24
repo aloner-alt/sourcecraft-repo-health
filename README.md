@@ -11,6 +11,7 @@
 - BullMQ worker, retry и периодический пересчёт известных публичных репозиториев;
 - Dashboard, история Score, рейтинг, Markdown- и PDF-отчёты;
 - PostgreSQL, Redis и воспроизводимый запуск через Docker Compose.
+- CI для backend, frontend и Docker-образов, Dependabot для зависимостей.
 
 ## Быстрый запуск
 

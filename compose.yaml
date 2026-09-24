@@ -36,6 +36,7 @@ services:
       DATABASE_URL: postgresql://repo_health:repo_health@postgres:5432/repo_health?schema=public
       REDIS_HOST: redis
       FRONTEND_URL: http://localhost:3001
+      SOURCECRAFT_CLI_PATH: /opt/sourcecraft/bin/src
       SCHEDULE_ENABLED: "true"
       ANALYSIS_INTERVAL_HOURS: "24"
     command: ["sh", "-c", "pnpm prisma:deploy && pnpm start:prod"]

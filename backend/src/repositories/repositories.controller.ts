@@ -34,6 +34,15 @@ export class RepositoriesController {
     return this.repositoriesService.findMine(request.user.id);
   }
 
+  @Post('mine/sync')
+  @UseGuards(SessionAuthGuard)
+  @ApiOperation({
+    summary: 'Import public repositories available to the configured SourceCraft identity',
+  })
+  syncMine(@Req() request: Request & { user: SessionUser }) {
+    return this.repositoriesService.syncMineFromSourceCraft(request.user.id);
+  }
+
   @Get()
   @ApiOperation({ summary: 'List and rank public SourceCraft repositories' })
   findPublic(@Query() query: ListRepositoriesQueryDto) {

@@ -21,6 +21,7 @@ describe('validateEnvironment', () => {
         REDIS_PORT: 6380,
         FRONTEND_URL: 'http://localhost:3001',
         SOURCECRAFT_API_BASE_URL: 'https://api.sourcecraft.tech',
+        SOURCECRAFT_CLI_PATH: undefined,
       }),
     );
   });

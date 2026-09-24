@@ -109,4 +109,34 @@ describe('SourceCraftClient', () => {
       'https://api.sourcecraft.tech/repos/team/demo/cicd/runs?page_size=50&page_token=cursor',
     );
   });
+
+  it('discovers the public catalog in stable creation order', async () => {
+    const fetchMock = jest.spyOn(global, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({ repositories: [] }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    );
+
+    await client.discoverPublicRepositories(100, 'cursor');
+
+    expect(fetchMock.mock.calls[0][0].toString()).toBe(
+      'https://api.sourcecraft.tech/repos?page_size=100&sort_by=created_at&page_token=cursor',
+    );
+  });
+
+  it('lists repositories available to the configured SourceCraft identity', async () => {
+    const fetchMock = jest.spyOn(global, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({ repositories: [] }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    );
+
+    await client.listMyRepositories(50);
+
+    expect(fetchMock.mock.calls[0][0].toString()).toBe(
+      'https://api.sourcecraft.tech/me/repos?page_size=50',
+    );
+  });
 });

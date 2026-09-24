@@ -37,7 +37,7 @@ export class AnalysisRunnerService {
     await this.analyses.markCollecting(id);
 
     try {
-      const [documentationResult, issuesResult, cicdResult, securityResult, codeHealthResult] = await Promise.all([
+      const [documentationResult, issuesResult, activityResult, cicdResult, securityResult, codeHealthResult] = await Promise.all([
         this.collectSafely('documentation', this.documentation.collect(
           analysis.repository.ownerSlug,
           analysis.repository.slug,
@@ -45,6 +45,12 @@ export class AnalysisRunnerService {
         this.collectSafely('issues', this.issues.collect(
           analysis.repository.ownerSlug,
           analysis.repository.slug,
+        )),
+        this.collectSafely('activity', this.activity.collect(
+          analysis.repository.sourcecraftId,
+          analysis.repository.ownerSlug,
+          analysis.repository.slug,
+          analysis.repository.lastActivityAt,
         )),
         this.collectSafely('CI/CD', this.cicd.collect(
           analysis.repository.ownerSlug,
@@ -59,9 +65,6 @@ export class AnalysisRunnerService {
           analysis.repository.slug,
         )),
       ]);
-      const activityResult = this.activity.collect(
-        analysis.repository.lastActivityAt,
-      );
       await this.analyses.markCalculating(id);
 
       await this.prisma.$transaction([
@@ -142,7 +145,7 @@ export class AnalysisRunnerService {
                   create: [
                     {
                       kind: EvidenceKind.METRIC,
-                      label: 'Last repository activity',
+                      label: metric.key,
                       value: metric.rawValue as Prisma.InputJsonValue,
                     },
                   ],
@@ -190,7 +193,13 @@ export class AnalysisRunnerService {
                 status: metric.status,
                 source: metric.source,
                 explanation: metric.explanation,
-                evidence: metric.rawValue.path ? { create: [{ kind: EvidenceKind.FILE, label: metric.key, value: { path: metric.rawValue.path } }] } : undefined,
+                evidence: {
+                  create: [{
+                    kind: EvidenceKind.VULNERABILITY,
+                    label: metric.key,
+                    value: metric.rawValue as Prisma.InputJsonValue,
+                  }],
+                },
               })),
             },
           },

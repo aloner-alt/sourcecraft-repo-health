@@ -6,10 +6,13 @@ import {
 import { ConfigService } from '@nestjs/config';
 import {
   SourceCraftCiRunPage,
+  SourceCraftContributorPage,
   SourceCraftIssuePage,
   SourceCraftIssueQuery,
   SourceCraftRepository,
   SourceCraftRepositoryPage,
+  SourceCraftPullRequestPage,
+  SourceCraftReleasePage,
   SourceCraftTreePage,
   SourceCraftTreeQuery,
 } from './sourcecraft.types';
@@ -39,6 +42,27 @@ export class SourceCraftClient {
     pageToken?: string,
   ): Promise<SourceCraftRepositoryPage> {
     return this.request(`/orgs/${encodeURIComponent(organizationSlug)}/repos`, {
+      page_size: String(pageSize),
+      ...(pageToken ? { page_token: pageToken } : {}),
+    });
+  }
+
+  discoverPublicRepositories(
+    pageSize = 100,
+    pageToken?: string,
+  ): Promise<SourceCraftRepositoryPage> {
+    return this.request('/repos', {
+      page_size: String(pageSize),
+      sort_by: 'created_at',
+      ...(pageToken ? { page_token: pageToken } : {}),
+    });
+  }
+
+  listMyRepositories(
+    pageSize = 100,
+    pageToken?: string,
+  ): Promise<SourceCraftRepositoryPage> {
+    return this.request('/me/repos', {
       page_size: String(pageSize),
       ...(pageToken ? { page_token: pageToken } : {}),
     });
@@ -87,6 +111,45 @@ export class SourceCraftClient {
       `/repos/${encodeURIComponent(organizationSlug)}/${encodeURIComponent(repositorySlug)}/cicd/runs`,
       {
         page_size: String(pageSize),
+        ...(pageToken ? { page_token: pageToken } : {}),
+      },
+    );
+  }
+
+  listRepositoryContributors(
+    repositoryId: string,
+    pageSize = 100,
+    pageToken?: string,
+  ): Promise<SourceCraftContributorPage> {
+    return this.request(`/repos/id:${encodeURIComponent(repositoryId)}/contributors`, {
+      page_size: String(pageSize),
+      ...(pageToken ? { page_token: pageToken } : {}),
+    });
+  }
+
+  listRepositoryPullRequests(
+    repositoryId: string,
+    pageSize = 100,
+    pageToken?: string,
+  ): Promise<SourceCraftPullRequestPage> {
+    return this.request(`/repos/id:${encodeURIComponent(repositoryId)}/pulls`, {
+      page_size: String(pageSize),
+      sort_by: '-updated_at',
+      ...(pageToken ? { page_token: pageToken } : {}),
+    });
+  }
+
+  listRepositoryReleases(
+    organizationSlug: string,
+    repositorySlug: string,
+    pageSize = 100,
+    pageToken?: string,
+  ): Promise<SourceCraftReleasePage> {
+    return this.request(
+      `/repos/${encodeURIComponent(organizationSlug)}/${encodeURIComponent(repositorySlug)}/releases`,
+      {
+        page_size: String(pageSize),
+        sort_by: '-released_at',
         ...(pageToken ? { page_token: pageToken } : {}),
       },
     );

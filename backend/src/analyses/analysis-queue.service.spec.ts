@@ -15,7 +15,7 @@ describe('AnalysisQueueService', () => {
   const queue = { add: jest.fn(), getJobCounts: jest.fn(), upsertJobScheduler: jest.fn() } as unknown as Queue;
   const repositories = {
     assertCanAnalyze: jest.fn(),
-    syncConfiguredCatalog: jest.fn(),
+    syncPublicCatalog: jest.fn(),
     publicRepositoryIds: jest.fn(),
   } as unknown as RepositoriesService;
   const prisma = { analysis: { findFirst: jest.fn() } } as unknown as PrismaService;

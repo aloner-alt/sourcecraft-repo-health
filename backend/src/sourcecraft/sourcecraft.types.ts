@@ -24,6 +24,14 @@ export type SourceCraftRepository = {
     tags?: string;
     branches?: string;
   };
+  rating?: {
+    value: number;
+    percentile?: number;
+    reaction_counts?: Array<{
+      type: 'none' | 'positive_low' | 'positive_medium' | 'positive_high';
+      count: string;
+    }>;
+  };
 };
 
 export type SourceCraftRepositoryPage = {
@@ -106,5 +114,43 @@ export type SourceCraftCiRun = {
 
 export type SourceCraftCiRunPage = {
   runs: SourceCraftCiRun[];
+  next_page_token?: string;
+};
+
+export type SourceCraftContributorPage = {
+  contributors: Array<{
+    id: string;
+    username?: string;
+    display_name?: string;
+  }>;
+  next_page_token?: string;
+};
+
+export type SourceCraftPullRequest = {
+  id: string;
+  slug: string;
+  title: string;
+  status: 'draft' | 'open' | 'discarded' | 'merging' | 'merged';
+  created_at: string;
+  updated_at: string;
+};
+
+export type SourceCraftPullRequestPage = {
+  pull_requests: SourceCraftPullRequest[];
+  next_page_token?: string;
+};
+
+export type SourceCraftRelease = {
+  id: string;
+  tag: string;
+  title: string;
+  status: 'draft' | 'published' | 'discarded';
+  created_at: string;
+  updated_at: string;
+  released_at?: string;
+};
+
+export type SourceCraftReleasePage = {
+  releases: SourceCraftRelease[];
   next_page_token?: string;
 };

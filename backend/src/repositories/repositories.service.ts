@@ -60,31 +60,62 @@ export class RepositoriesService {
     return repository;
   }
 
-  async syncConfiguredCatalog(): Promise<{ organizations: number; repositories: number }> {
-    const organizations = (this.config.get<string>('SOURCECRAFT_ORGANIZATIONS') ?? '')
-      .split(',')
-      .map((value) => value.trim())
-      .filter(Boolean);
+  async syncPublicCatalog(): Promise<{ organizations: number; repositories: number }> {
+    const organizations = new Set<string>();
+    const seen = new Set<string>();
     let repositories = 0;
-    for (const organization of organizations) {
-      let pageToken: string | undefined;
-      for (let page = 0; page < 100; page += 1) {
-        const result = await this.sourceCraft.listOrganizationRepositories(
-          organization,
-          100,
-          pageToken,
-        );
-        for (const source of result.repositories.filter(
-          (item) => item.visibility === 'public',
-        )) {
-          await this.upsertSourceRepository(source);
-          repositories += 1;
-        }
-        pageToken = result.next_page_token;
-        if (!pageToken) break;
+    let pageToken: string | undefined;
+    const maxPages = this.config.get<number>('SOURCECRAFT_CATALOG_MAX_PAGES', 100);
+
+    for (let page = 0; page < maxPages; page += 1) {
+      const result = await this.sourceCraft.discoverPublicRepositories(
+        100,
+        pageToken,
+      );
+      for (const source of result.repositories) {
+        if (source.visibility !== 'public' || seen.has(source.id)) continue;
+        seen.add(source.id);
+        organizations.add(source.organization.slug);
+        await this.upsertSourceRepository(source);
+        repositories += 1;
       }
+      pageToken = result.next_page_token;
+      if (!pageToken) break;
     }
-    return { organizations: organizations.length, repositories };
+
+    return { organizations: organizations.size, repositories };
+  }
+
+  async syncMineFromSourceCraft(userId: string) {
+    let pageToken: string | undefined;
+    const importedIds: string[] = [];
+
+    for (let page = 0; page < 100; page += 1) {
+      const result = await this.sourceCraft.listMyRepositories(100, pageToken);
+      for (const source of result.repositories.filter(
+        (repository) => repository.visibility === 'public',
+      )) {
+        const repository = await this.upsertSourceRepository(source);
+        await this.prisma.repositoryAccess.upsert({
+          where: {
+            userId_repositoryId: {
+              userId,
+              repositoryId: repository.id,
+            },
+          },
+          create: { userId, repositoryId: repository.id },
+          update: {},
+        });
+        importedIds.push(repository.id);
+      }
+      pageToken = result.next_page_token;
+      if (!pageToken) break;
+    }
+
+    return {
+      imported: new Set(importedIds).size,
+      items: await this.findMine(userId),
+    };
   }
 
   async findMine(userId: string) {
@@ -125,6 +156,7 @@ export class RepositoriesService {
       webUrl: source.web_url,
       visibility,
       primaryLanguage: source.language?.name ?? null,
+      likesCount: this.likesCount(source),
       lastActivityAt: source.last_updated
         ? new Date(source.last_updated)
         : null,
@@ -137,6 +169,17 @@ export class RepositoriesService {
       update: data,
       select: repositoryListSelect,
     });
+  }
+
+  private likesCount(
+    source: Awaited<ReturnType<SourceCraftClient['getRepository']>>,
+  ): number {
+    const likes = source.rating?.reaction_counts?.find(
+      (reaction) => reaction.type === 'positive_low',
+    )?.count;
+    if (!likes) return 0;
+    const parsed = Number(likes);
+    return Number.isSafeInteger(parsed) && parsed >= 0 ? parsed : 0;
   }
 
   async findPublic(query: ListRepositoriesQueryDto) {

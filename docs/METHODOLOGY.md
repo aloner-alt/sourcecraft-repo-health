@@ -4,8 +4,8 @@
 
 | Категория | Вес | Основные сигналы |
 |---|---:|---|
-| Security | 20% | security policy, manifest, lockfile, dependency updates |
-| Activity | 15% | давность последней активности |
+| Security | 20% | реальные SourceCraft AppSec findings: SAST, SCA, secret scanning, severity, remediation |
+| Activity | 15% | давность активности, contributors, MR за 90 дней, свежесть релизов |
 | Documentation | 15% | README, LICENSE, CONTRIBUTING, CODEOWNERS |
 | CI/CD | 15% | наличие запусков, success rate, свежесть успешного запуска |
 | Issues | 15% | закрытие, stale issues, заполненность описаний |
@@ -23,6 +23,6 @@
 
 ## Ограничения
 
-Публичный REST API SourceCraft на момент реализации не публикует результаты AppSec/SAST/SCA. Поэтому security-hygiene сигналы не следует интерпретировать как отсутствие уязвимостей. После появления официального интерфейса AppSec его данные должны заменить или дополнить текущие security-метрики.
+Security рассчитывается только по реальным данным `src appsec defect list --json`. Открытые findings штрафуются с учётом критичности: critical сильнее high, high сильнее medium и low; отдельная метрика отражает долю исправленных или закрытых findings. Если актуальный SourceCraft CLI не подключён или AppSec недоступен, категория получает `NO_DATA` и не участвует в итоговом Score. Наличие `SECURITY.md`, lockfile или иных файлов не выдаётся за SAST/SCA/secret scanning.
 
-Activity v1 использует подтверждённый `last_updated`; частота коммитов и bus factor требуют отдельного проверенного источника Git history.
+Activity v1 использует подтверждённые `last_updated`, список contributors, merge requests и опубликованные релизы. Если один из дополнительных endpoints временно недоступен, его вес перераспределяется внутри категории. Частота коммитов и полноценный bus factor требуют отдельного проверенного источника Git history.

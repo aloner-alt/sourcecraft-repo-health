@@ -11,6 +11,7 @@ describe('HealthController', () => {
     get: jest.fn((key: string, fallback?: string) => {
       const values: Record<string, string> = {
         SOURCECRAFT_TOKEN: 'sourcecraft-token',
+        SOURCECRAFT_CLI_PATH: '/opt/sourcecraft/bin/src',
         YANDEX_CLIENT_ID: 'client-id',
         YANDEX_CLIENT_SECRET: 'client-secret',
         YANDEX_CALLBACK_URL: 'http://localhost:3000/api/auth/yandex/callback',
@@ -41,6 +42,7 @@ describe('HealthController', () => {
   it('reports configuration without exposing secrets', () => {
     expect(controller.getConfigStatus()).toEqual({
       sourceCraftTokenConfigured: true,
+      appSecCliConfigured: true,
       yandexAuthConfigured: true,
       frontendUrl: 'http://localhost:3001',
     });

@@ -119,10 +119,11 @@ link; the service PAT is never treated as proof of a user's access.
 
 ## Periodic analysis
 
-`SOURCECRAFT_ORGANIZATIONS` is a comma-separated discovery scope. At startup,
+`SOURCECRAFT_CATALOG_MAX_PAGES` limits one SourceCraft-wide catalog refresh to
+100 repositories per page. During a scheduled sweep,
 BullMQ registers a repeatable sweep controlled by `SCHEDULE_ENABLED` and
 `ANALYSIS_INTERVAL_HOURS`. Each sweep refreshes public repositories from the
-configured organizations and queues repositories that do not already have an
+global SourceCraft catalog and queues repositories that do not already have an
 active analysis.
 
 The documentation collector checks the repository tree for README, license,
@@ -136,28 +137,31 @@ documentation, stale issues, and incomplete issue descriptions. Each item has
 an explainable expected score increase, and their combined effect is stored as
 the analysis `potentialScore`.
 
-The activity collector uses the documented SourceCraft repository
-`last_updated` timestamp. It deliberately measures only repository recency;
-commit frequency and contributor activity remain unavailable until a verified
-commit-history data source is connected.
+The activity collector uses documented SourceCraft data: `last_updated`,
+contributors, merge requests, and published releases. Each source is isolated,
+so a temporary endpoint failure does not erase the remaining activity signals.
+Commit frequency remains unavailable until a verified Git-history source is
+connected.
 
 The CI/CD collector uses SourceCraft run history to measure pipeline presence,
 terminal-run success rate, and freshness of the latest successful run. When
 reliability is low, the analysis recommends stabilizing the pipeline. With all
 currently implemented categories available, data coverage is 60%.
 
-The security category currently measures repository security hygiene only:
-security policy, dependency manifest, lock file, and automated dependency
-updates. It does not claim to detect vulnerabilities because the published
-SourceCraft REST API does not expose AppSec findings. With this category,
-maximum verified data coverage is 80%.
+The Security category never substitutes file-presence heuristics for a
+vulnerability scan. When `SOURCECRAFT_CLI_PATH` points to a recent authenticated
+SourceCraft CLI, the collector runs `src appsec defect list --json` and scores
+real SAST, SCA, and secret-scanning findings by severity and remediation status.
+Without that integration Security is `NO_DATA`, its weight is excluded, and the
+remaining category weights are normalized.
 
 The code-health category detects automated tests, static-analysis configuration,
 formatting rules, and typed-project configuration. Missing practices generate
-prioritized recommendations. Documentation, security, and code-health collectors
-share one paginated repository-tree request through a short-lived cache. The
-implemented methodology now covers all six categories and can reach 100% data
-coverage when SourceCraft returns issue data.
+prioritized recommendations. Documentation and code-health collectors share one
+paginated repository-tree request through a short-lived cache. The large-tree
+path is covered by a deterministic 10,500-file test (`pnpm test:large-repo`).
+The methodology covers all six categories and can reach 100% data coverage when
+SourceCraft returns issue data and AppSec CLI integration is available.
 
 ## Next modules
 

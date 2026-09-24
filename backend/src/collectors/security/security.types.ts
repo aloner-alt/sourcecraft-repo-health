@@ -1,6 +1,6 @@
 import { DataStatus } from '@prisma/client';
 
-export type ActivityMetric = {
+export type SecurityMetric = {
   key: string;
   rawValue: Record<string, unknown>;
   normalizedScore: number;
@@ -10,9 +10,9 @@ export type ActivityMetric = {
   explanation: string;
 };
 
-export type ActivityCollectionResult = {
+export type SecurityCollectionResult = {
   score: number | null;
   status: DataStatus;
   summary: string;
-  metrics: ActivityMetric[];
+  metrics: SecurityMetric[];
 };

@@ -24,7 +24,7 @@ REDIS_PORT=6379
 REDIS_PASSWORD=
 FRONTEND_URL=http://localhost:3001
 SOURCECRAFT_API_BASE_URL=https://api.sourcecraft.tech
-SOURCECRAFT_ORGANIZATIONS=divkit
+SOURCECRAFT_CATALOG_MAX_PAGES=100
 SCHEDULE_ENABLED=true
 ANALYSIS_INTERVAL_HOURS=24
 YANDEX_CALLBACK_URL=http://localhost:3000/api/auth/yandex/callback
@@ -83,6 +83,30 @@ The CLI command `src auth login` can authenticate the local SourceCraft CLI,
 but the running backend still needs its own `SOURCECRAFT_TOKEN` environment
 variable.
 
+## SOURCECRAFT_CLI_PATH and AppSec
+
+SourceCraft exposes AppSec findings through its current CLI. Install or update
+the CLI, authenticate it with `src auth login`, and verify that the following
+command is available:
+
+```bash
+src appsec defect list -R organization/repository --json
+```
+
+Then set the absolute executable path for the backend process, for example:
+
+```dotenv
+SOURCECRAFT_CLI_PATH=C:\Users\you\AppData\Local\Programs\src\src.exe
+```
+
+The CLI identity must have access to every analyzed repository. The supplied
+Dockerfile installs a checksum-verified CLI `0.0.105`, and Compose sets its
+container path automatically; the CLI reads `SOURCECRAFT_TOKEN` from the
+backend environment. Do not put an access token in command-line arguments. Without this variable, Security is
+`NO_DATA` and excluded from the score; the application never invents an AppSec
+result from repository files. A custom container deployment must provide the
+same CLI or leave the integration intentionally disabled.
+
 ## Final check
 
 The completed `.env` has this shape:
@@ -98,7 +122,8 @@ FRONTEND_URL=http://localhost:3001
 AUTH_JWT_SECRET=<generated locally>
 SOURCECRAFT_API_BASE_URL=https://api.sourcecraft.tech
 SOURCECRAFT_TOKEN=<SourceCraft PAT>
-SOURCECRAFT_ORGANIZATIONS=divkit
+SOURCECRAFT_CLI_PATH=<optional absolute path to recent src CLI>
+SOURCECRAFT_CATALOG_MAX_PAGES=100
 SCHEDULE_ENABLED=true
 ANALYSIS_INTERVAL_HOURS=24
 YANDEX_CLIENT_ID=<Yandex application Client ID>

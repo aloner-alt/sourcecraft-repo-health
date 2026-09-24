@@ -7,6 +7,17 @@ export type DashboardCategory = {
   reason: string;
   fact: string;
   raw: string;
+  metrics: Array<{
+    id: string;
+    key: string;
+    score: number | null;
+    weight: number;
+    status: string;
+    source: string;
+    explanation: string;
+    raw: string;
+    evidence: Array<{ id: string; label: string; kind: string; url?: string | null; value: string }>;
+  }>;
 };
 
 export type DashboardRecommendation = {

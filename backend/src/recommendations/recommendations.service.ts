@@ -8,7 +8,7 @@ import { DocumentationCollectionResult } from '../collectors/documentation/docum
 import { IssuesCollectionResult } from '../collectors/issues/issues.types';
 import { ActivityCollectionResult } from '../collectors/activity/activity.types';
 import { CiCdCollectionResult } from '../collectors/cicd/cicd.types';
-import { SecurityCollectionResult } from '../collectors/security/security.collector';
+import { SecurityCollectionResult } from '../collectors/security/security.types';
 import { CodeHealthCollectionResult } from '../collectors/code-health/code-health.collector';
 import { CATEGORY_WEIGHTS } from '../scoring/scoring.constants';
 import { GeneratedRecommendation } from './recommendations.types';
@@ -149,6 +149,75 @@ export class RecommendationsService {
       );
     }
 
+    const contributors = activity.metrics.find(
+      (metric) => metric.key === 'contributor_depth',
+    );
+    if (contributors && contributors.normalizedScore < 60) {
+      recommendations.push(
+        this.recommendation(
+          HealthCategory.ACTIVITY,
+          'Reduce contributor concentration',
+          contributors.explanation,
+          'A broader contributor base reduces maintenance bottlenecks and project continuity risk.',
+          'Document contribution paths, label starter issues, and distribute ownership across maintainers.',
+          this.overallDelta(
+            (80 - contributors.normalizedScore) * contributors.weight,
+            CATEGORY_WEIGHTS.ACTIVITY,
+            availableWeight,
+          ),
+          EvidenceKind.METRIC,
+          contributors.key,
+          contributors.rawValue,
+        ),
+      );
+    }
+
+    const pullRequests = activity.metrics.find(
+      (metric) => metric.key === 'pull_request_flow',
+    );
+    if (pullRequests && pullRequests.normalizedScore < 60) {
+      recommendations.push(
+        this.recommendation(
+          HealthCategory.ACTIVITY,
+          'Improve merge request flow',
+          pullRequests.explanation,
+          'A visible review and merge flow makes changes easier to validate and maintain.',
+          'Use merge requests for meaningful changes and keep reviews moving to completion.',
+          this.overallDelta(
+            (80 - pullRequests.normalizedScore) * pullRequests.weight,
+            CATEGORY_WEIGHTS.ACTIVITY,
+            availableWeight,
+          ),
+          EvidenceKind.MERGE_REQUEST,
+          pullRequests.key,
+          pullRequests.rawValue,
+        ),
+      );
+    }
+
+    const releases = activity.metrics.find(
+      (metric) => metric.key === 'release_freshness',
+    );
+    if (releases && releases.normalizedScore < 60) {
+      recommendations.push(
+        this.recommendation(
+          HealthCategory.ACTIVITY,
+          'Establish a release cadence',
+          releases.explanation,
+          'Published releases make stable project progress discoverable to users.',
+          'Publish a versioned release with concise notes and keep a repeatable release cadence.',
+          this.overallDelta(
+            (80 - releases.normalizedScore) * releases.weight,
+            CATEGORY_WEIGHTS.ACTIVITY,
+            availableWeight,
+          ),
+          EvidenceKind.RELEASE,
+          releases.key,
+          releases.rawValue,
+        ),
+      );
+    }
+
     const successRate = cicd.metrics.find(
       (metric) => metric.key === 'success_rate',
     );
@@ -173,27 +242,30 @@ export class RecommendationsService {
     }
 
     const securityTitles: Record<string, string> = {
-      security_policy: 'Add a security policy',
-      dependency_manifest: 'Declare project dependencies',
-      dependency_lockfile: 'Lock dependency versions',
-      dependency_updates: 'Automate dependency updates',
+      open_critical_findings: 'Fix critical AppSec findings',
+      open_high_findings: 'Fix high-severity AppSec findings',
+      open_medium_findings: 'Reduce medium-severity AppSec findings',
+      open_low_findings: 'Review low-severity AppSec findings',
+      remediation_rate: 'Improve AppSec remediation rate',
     };
     for (const metric of security.metrics.filter(
-      (item) => !item.rawValue.present,
+      (item) => item.normalizedScore < 100,
     )) {
       recommendations.push(
         this.recommendation(
           HealthCategory.SECURITY,
           securityTitles[metric.key],
           metric.explanation,
-          'Baseline security hygiene makes dependency and vulnerability handling repeatable.',
-          `Implement the missing ${metric.key.replaceAll('_', ' ')} control and document ownership.`,
+          'The recommendation is based only on real SourceCraft AppSec findings and their remediation status.',
+          metric.key === 'remediation_rate'
+            ? 'Triage open findings in SourceCraft AppSec, assign owners, and close or explicitly resolve them.'
+            : 'Open the referenced SourceCraft AppSec findings, remediate the root cause, and rerun the AppSec checks.',
           this.overallDelta(
-            100 * metric.weight,
+            (100 - metric.normalizedScore) * metric.weight,
             CATEGORY_WEIGHTS.SECURITY,
             availableWeight,
           ),
-          EvidenceKind.METRIC,
+          EvidenceKind.VULNERABILITY,
           metric.key,
           metric.rawValue,
         ),
