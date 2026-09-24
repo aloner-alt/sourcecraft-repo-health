@@ -24,4 +24,3 @@ describe('ActivityCollector', () => {
     await expect(new ActivityCollector().collect('', '', null, now)).resolves.toMatchObject({ score: null, status: DataStatus.NO_DATA, metrics: [] });
   });
 });
-

@@ -43,5 +43,3 @@ export class ActivityCollector {
   private inWindow(value: string | undefined, now: Date, windowMs: number): boolean { return Boolean(value && now.getTime() - new Date(value).getTime() <= windowMs && new Date(value).getTime() <= now.getTime()); }
   private scoreRecency(days: number): number { if (days <= 7) return 100; if (days <= 30) return 80; if (days <= 90) return 60; if (days <= 180) return 30; return 0; }
 }
-
-

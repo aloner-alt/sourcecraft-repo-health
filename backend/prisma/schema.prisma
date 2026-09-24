@@ -202,5 +202,3 @@ enum EvidenceKind {
   RELEASE
   METRIC
 }
-
-
