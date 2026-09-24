@@ -155,4 +155,3 @@ export class AnalysesService {
     return analysis;
   }
 }
-
