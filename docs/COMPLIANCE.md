@@ -25,3 +25,7 @@
 `/api/health/ready`, публичные страницы, скачивание отчётов и OAuth callback.
 Пошаговый сценарий находится в [DEMO.md](DEMO.md).
 
+
+## Интеграционная ветка
+
+Фактическое сравнение `origin/main..integration/main-frontend-v2` и проверенные команды находятся в [INTEGRATION_AUDIT.md](INTEGRATION_AUDIT.md). Docker Compose и live SourceCraft анализ помечены как ожидающие внешнюю инфраструктуру и токены; они не заменены демонстрационными ответами.
