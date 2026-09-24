@@ -27,3 +27,5 @@ docker compose up --build
 - Swagger: http://localhost:3000/docs
 
 Подробности: [соответствие ТЗ](docs/COMPLIANCE.md), [архитектура](docs/ARCHITECTURE.md), [методология](docs/METHODOLOGY.md), [сценарий демонстрации](docs/DEMO.md) и [настройка окружения](backend/docs/ENVIRONMENT.md).
+
+Материалы защиты: [текст выступления](docs/PITCH.md), [сценарий видео](docs/VIDEO-SCRIPT.md), [чек-лист сдачи](docs/SUBMISSION-CHECKLIST.md) и [развёртывание в Yandex Cloud](docs/DEPLOY-YANDEX-CLOUD.md).

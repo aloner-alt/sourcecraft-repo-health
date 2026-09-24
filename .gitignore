@@ -22,3 +22,8 @@ Thumbs.db
 
 # Local temporary files
 tmp/
+deploy/yandex-cloud/backend.env
+.env.production
+.codex-build/
+.codex-finalizer/
+output/presentation/sourcecraft-repo-health-defense.pptx
