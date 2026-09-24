@@ -1,6 +1,6 @@
 import { Injectable, Optional } from '@nestjs/common';
 import { DataStatus } from '@prisma/client';
-import { SourceCraftClient } from '../../sourcecraft/sourcecraft.client';
+import { SourceCraftClient } from '../../sourcecraft/sourcecraft.client';\nimport { SourceCraftPullRequest, SourceCraftRelease } from '../../sourcecraft/sourcecraft.types';
 import { ActivityCollectionResult, ActivityMetric } from './activity.types';
 
 const DAY = 24 * 60 * 60 * 1000;
@@ -43,4 +43,5 @@ export class ActivityCollector {
   private inWindow(value: string | undefined, now: Date, windowMs: number): boolean { return Boolean(value && now.getTime() - new Date(value).getTime() <= windowMs && new Date(value).getTime() <= now.getTime()); }
   private scoreRecency(days: number): number { if (days <= 7) return 100; if (days <= 30) return 80; if (days <= 90) return 60; if (days <= 180) return 30; return 0; }
 }
+
 
