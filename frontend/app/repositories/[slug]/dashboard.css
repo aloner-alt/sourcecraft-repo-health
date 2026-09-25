@@ -73,8 +73,14 @@ body:has(.repository-dashboard){overflow-x:clip}
 .repository-dashboard :is(.coverage-panel,.potential-panel) p:not(.eyebrow){color:var(--muted);font-size:13px;line-height:1.7;margin:10px 0}
 .repository-dashboard .coverage-line{height:5px;border-radius:5px;background:var(--line);overflow:hidden;margin:16px 0}
 .repository-dashboard .coverage-line i{display:block;width:82%;height:100%;background:var(--dashboard-accent)}
-.repository-dashboard .coverage-panel details{margin-top:16px;font-size:13px}
-.repository-dashboard .coverage-panel summary{display:flex;align-items:center;justify-content:space-between;cursor:pointer;min-height:36px;list-style:none;color:var(--dashboard-accent)}
+.repository-dashboard .coverage-panel{padding:0;overflow:hidden;transition:border-color .18s ease,box-shadow .18s ease}
+.repository-dashboard .coverage-panel:hover{border-color:#b8c9e4}
+.repository-dashboard .coverage-panel[open]{border-color:#a7beef}
+.repository-dashboard .coverage-panel summary{display:flex;flex-direction:column;align-items:stretch;min-width:0;padding:24px;cursor:pointer;list-style:none}
+.repository-dashboard .coverage-panel summary>*{min-width:0}
+.repository-dashboard .coverage-toggle{display:flex;align-items:center;justify-content:space-between;min-height:36px;margin-top:16px;color:var(--dashboard-accent);font-size:13px}
+.repository-dashboard .coverage-details{padding:16px 24px 20px;background:var(--soft);border-top:1px solid var(--line)}
+.repository-dashboard .coverage-details p{margin:0!important;overflow-wrap:anywhere}
 .repository-dashboard .potential-panel>a{display:inline-flex;align-items:center;gap:8px;color:var(--dashboard-accent);font-size:13px;margin-top:10px;min-height:36px}
 .repository-dashboard .section-title{display:flex;justify-content:space-between;align-items:baseline;gap:8px 20px;flex-wrap:wrap;margin:0 0 18px}
 .repository-dashboard .section-title h2{font-size:20px;line-height:1.4;font-weight:600;letter-spacing:-.5px;margin:0}
@@ -94,15 +100,15 @@ body:has(.repository-dashboard){overflow-x:clip}
 .repository-dashboard .no-data-label{font-size:12px;font-weight:500;color:var(--muted);background:#f1f4f8;padding:5px 8px;border-radius:6px}
 .repository-dashboard .category-bar{grid-column:1/-1;height:4px;background:var(--line);border-radius:4px;overflow:hidden}
 .repository-dashboard .category-bar-placeholder{visibility:hidden}
-.repository-dashboard :is(.expand-icon,.recommendation summary>svg,.coverage-panel summary>svg){transition:transform .2s ease-out}
-.repository-dashboard .coverage-panel details[open] summary>svg{transform:rotate(180deg)}
+.repository-dashboard :is(.expand-icon,.recommendation summary>svg,.coverage-toggle svg){transition:transform .2s ease-out}
+.repository-dashboard .coverage-panel[open] .coverage-toggle svg{transform:rotate(180deg)}
 .repository-dashboard :is(.detail-link,.repo-actions>a,.mobile-primary-action,.potential-panel>a) svg{transition:transform .18s ease-out}
 @media(hover:hover){.repository-dashboard :is(.detail-link,.repo-actions>a,.mobile-primary-action,.potential-panel>a):hover svg{transform:translateX(3px)}}
 /* Progressive enhancement: native details remain usable in older browsers. */
 @supports (interpolate-size:allow-keywords){
-  .repository-dashboard :is(.category,.recommendation,.coverage-panel details){interpolate-size:allow-keywords}
-  .repository-dashboard :is(.category,.recommendation,.coverage-panel details)::details-content{height:0;opacity:0;overflow:clip;transition:height .22s ease-out,opacity .18s ease-out,content-visibility .22s allow-discrete}
-  .repository-dashboard :is(.category,.recommendation,.coverage-panel details)[open]::details-content{height:auto;opacity:1}
+  .repository-dashboard :is(.category,.recommendation,.coverage-panel){interpolate-size:allow-keywords}
+  .repository-dashboard :is(.category,.recommendation,.coverage-panel)::details-content{height:0;opacity:0;overflow:clip;transition:height .22s ease-out,opacity .18s ease-out,content-visibility .22s allow-discrete}
+  .repository-dashboard :is(.category,.recommendation,.coverage-panel)[open]::details-content{height:auto;opacity:1}
 }
 .repository-dashboard .category-bar i{display:block;height:100%;background:var(--dashboard-accent)}
 .repository-dashboard .category-reason{grid-column:1/-1;color:var(--muted);font-size:14px;line-height:1.6;align-self:end}
@@ -138,10 +144,17 @@ body:has(.repository-dashboard){overflow-x:clip}
  .repository-dashboard .repo-header{align-items:flex-start;flex-direction:column;padding-bottom:20px;gap:16px}
  .repository-dashboard .repo-header h1{font-size:30px}
  .repository-dashboard .repo-actions{display:none}
- .repository-dashboard .overview-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+ .repository-dashboard .overview-grid{display:grid;grid-template-columns:1fr 1fr;align-items:start;gap:12px}
+ .repository-dashboard :is(.coverage-panel,.potential-panel){min-height:330px}
+ .repository-dashboard .coverage-panel summary{min-height:328px}
+ .repository-dashboard .coverage-toggle{margin-top:auto}
+ .repository-dashboard .potential-panel{display:flex;flex-direction:column}
+ .repository-dashboard .potential-panel>a{margin-top:auto}
  .repository-dashboard .score-panel{grid-column:1/-1}
  .repository-dashboard .mobile-primary-action{display:flex;margin-top:20px}
- .repository-dashboard :is(.coverage-panel,.potential-panel){padding:16px}
+ .repository-dashboard .potential-panel{padding:16px}
+ .repository-dashboard .coverage-panel summary{padding:16px}
+ .repository-dashboard .coverage-details{padding:16px}
  .repository-dashboard .coverage-value,.repository-dashboard .potential-value{font-size:36px}
  .repository-dashboard :is(.coverage-panel,.potential-panel) h2{font-size:14px}
  .repository-dashboard .category-grid{grid-template-columns:1fr}
@@ -153,6 +166,10 @@ body:has(.repository-dashboard){overflow-x:clip}
  .repository-dashboard .recommendation summary{grid-template-columns:1fr 18px;gap:6px}
  .repository-dashboard .priority{grid-column:1/-1}
  .repository-dashboard .design-footer{font-size:11px}
+}
+@media(max-width:420px){
+ .repository-dashboard :is(.coverage-panel,.potential-panel){min-height:380px}
+ .repository-dashboard .coverage-panel summary{min-height:378px}
 }
 .repository-dashboard button:focus-visible,.repository-dashboard select:focus-visible{outline:3px solid var(--dashboard-accent);outline-offset:3px}
 .repository-dashboard .dashboard-filters{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:18px}

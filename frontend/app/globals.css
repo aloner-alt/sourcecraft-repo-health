@@ -173,6 +173,9 @@ body {
 
 :is(a,button,input,select,summary):focus-visible{outline:3px solid var(--primary);outline-offset:3px}
 input[aria-label="Поиск репозитория"][data-pointer-focus="true"]:focus-visible{outline:none}
+#repository-url:focus-visible{outline:none;border-color:color-mix(in srgb,var(--foreground) 24%,var(--border));box-shadow:none}
+.app-content input[aria-label="Поиск репозитория"]:not([type="checkbox"]):not([type="radio"]):focus-visible{outline:none;border-color:transparent;box-shadow:none}
+label:has(> input[aria-label="Поиск репозитория"]:focus-visible){border-color:color-mix(in srgb,var(--foreground) 24%,var(--border))}
 .skip-link{position:fixed;top:12px;left:12px;z-index:100;background:var(--card);color:var(--primary);border:1px solid var(--border);padding:12px 16px;border-radius:8px;transform:translateY(-160%)}
 .skip-link:focus{transform:translateY(0)}
 .mobile-menu-button{min-width:44px;min-height:44px;align-items:center;justify-content:center}
@@ -223,7 +226,6 @@ html{scroll-behavior:smooth}
   .app-sidebar[data-collapsed="true"] .app-brand-full{display:none}
   .app-sidebar[data-collapsed="true"] .app-brand{width:44px;height:44px;justify-content:center;border:1px solid var(--border);border-radius:12px;background:var(--card);box-shadow:0 3px 12px rgb(15 23 42 / .08)}
   .app-sidebar[data-collapsed="true"] .app-brand-compact{display:inline-flex}
-  .app-sidebar[data-collapsed="true"] .app-sidebar-top>.flex{display:none}
   .app-sidebar[data-collapsed="true"] .app-sidebar-label{height:0;margin:18px 0 14px;overflow:hidden;opacity:0}
   .app-sidebar[data-collapsed="true"] nav{gap:16px}
   .app-sidebar[data-collapsed="true"] .app-nav-link{width:44px;height:44px;min-height:44px;justify-content:center;gap:0;padding:0;border:1px solid transparent;border-radius:12px}
@@ -236,6 +238,12 @@ html{scroll-behavior:smooth}
 @media(max-width:900px){.app-sidebar{position:sticky;inset:0 auto auto 0;width:auto;padding:15px 20px;display:block;border-radius:0;border-inline:0;box-shadow:0 5px 18px rgb(24 32 41 / .13)}:root[data-theme="dark"] .app-sidebar{box-shadow:0 5px 18px rgb(0 0 0 / .4)}.app-sidebar-top{display:flex;align-items:center;justify-content:space-between}.mobile-menu-button{display:block}.app-sidebar-label,.app-sidebar-footer{display:none}.app-sidebar nav{display:none;margin-top:15px}.app-sidebar nav[data-open=true]{display:grid}.app-content{margin-left:0}}
 @media(max-width:900px){.sidebar-collapse-button{display:none}.app-brand-compact{display:none!important}.app-brand-full{display:inline}}
 .mobile-navigation-reveal{display:contents}
+.app-auth-link{display:inline-flex;min-height:44px;align-items:center;justify-content:center;gap:8px;max-width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--card);color:var(--foreground);font-size:13px;font-weight:600;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.app-auth-link:hover{background:var(--accent);color:var(--primary)}
+.sidebar-account .app-auth-link{width:100%}
+.app-sidebar[data-collapsed="true"] .sidebar-account .app-auth-link{width:44px;height:44px;padding:0;font-size:0}
+.app-sidebar[data-collapsed="true"] .sidebar-account .app-auth-link svg{flex:none}
+@media(max-width:900px){.mobile-account-entry .app-auth-link{width:100%;justify-content:flex-start}}
 @media(max-width:900px){
   .mobile-navigation-reveal{display:grid;grid-template-rows:0fr;opacity:0;margin-top:0;transition:grid-template-rows .24s ease-out,opacity .18s ease-out,margin-top .24s ease-out}
   .mobile-navigation-reveal[data-open=true]{grid-template-rows:1fr;opacity:1;margin-top:15px}
