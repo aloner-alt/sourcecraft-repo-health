@@ -93,26 +93,6 @@ docker compose -p repo-health down
 - `GET /api/repositories/:id/history` — история оценок;
 - `GET /api/analyses/:id/reports/report.pdf` — PDF-отчёт.
 
-## Проверка перед сдачей
-
-Backend:
-
-```bash
-cd backend
-pnpm install
-pnpm test
-pnpm build
-```
-
-Frontend:
-
-```bash
-cd frontend
-npm install
-npm run lint
-npm run build
-```
-
 ## Ограничения
 
 - AppSec работает только при наличии прав на SourceCraft AppSec. Если токен не имеет нужного разрешения, категория безопасности честно отображается как недоступная.
