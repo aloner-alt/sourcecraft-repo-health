@@ -12,6 +12,7 @@ services:
       YANDEX_CALLBACK_URL: https://${APP_DOMAIN:?Set APP_DOMAIN}/api/auth/yandex/callback
       AUTH_JWT_SECRET: ${AUTH_JWT_SECRET}
       SOURCECRAFT_CLI_PATH: /opt/sourcecraft/bin/src
+      SOURCECRAFT_TOKEN: ${SOURCECRAFT_TOKEN}
     command: ["sh", "-c", "pnpm prisma:deploy && pnpm start:prod"]
 
   frontend:
