@@ -1,37 +1,8 @@
 services:
-  postgres:
-    image: postgres:17-alpine
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: repo_health
-      POSTGRES_USER: repo_health
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U repo_health -d repo_health"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
-
-  redis:
-    image: redis:8-alpine
-    restart: unless-stopped
-    command: ["redis-server", "--appendonly", "yes"]
-    volumes:
-      - redis_data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
-
   backend:
     build:
       context: ./backend
     restart: unless-stopped
-    env_file:
-      - ./deploy/yandex-cloud/backend.env
     environment:
       DATABASE_URL: postgresql://repo_health:${POSTGRES_PASSWORD}@postgres:5432/repo_health?schema=public
       REDIS_HOST: redis
@@ -40,11 +11,6 @@ services:
       YANDEX_CALLBACK_URL: https://${APP_DOMAIN}/api/auth/yandex/callback
       SOURCECRAFT_CLI_PATH: /opt/sourcecraft/bin/src
     command: ["sh", "-c", "pnpm prisma:deploy && pnpm start:prod"]
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
 
   frontend:
     build:
@@ -58,26 +24,3 @@ services:
       NEXT_PUBLIC_API_BASE_URL: /api
     depends_on:
       - backend
-
-  caddy:
-    image: caddy:2-alpine
-    restart: unless-stopped
-    environment:
-      APP_DOMAIN: ${APP_DOMAIN:?Set APP_DOMAIN}
-    ports:
-      - "80:80"
-      - "443:443"
-      - "443:443/udp"
-    volumes:
-      - ./deploy/yandex-cloud/Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy_data:/data
-      - caddy_config:/config
-    depends_on:
-      - frontend
-      - backend
-
-volumes:
-  postgres_data:
-  redis_data:
-  caddy_data:
-  caddy_config:
