@@ -4,8 +4,8 @@ services:
       context: ./backend
     restart: unless-stopped
     environment:
-      DATABASE_URL: postgresql://repo_health:${POSTGRES_PASSWORD}@postgres:5432/repo_health?schema=public
-      REDIS_HOST: redis
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_HOST: ${REDIS_HOST}
       REDIS_PORT: 6379
       FRONTEND_URL: https://${APP_DOMAIN:?Set APP_DOMAIN}
       YANDEX_CALLBACK_URL: https://${APP_DOMAIN}/api/auth/yandex/callback
